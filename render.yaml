@@ -30,9 +30,7 @@ services:
         value: 10000
       - key: SERPAPI_KEY
         sync: false
-      - key: GROQ_API_KEY
-        sync: false
-      - key: GOOGLE_AI_KEY
+      - key: GEMMA_API_KEY
         sync: false
       - key: GEMMA_MODEL_NAME
-        value: gemma2-9b-it
+        value: gemma-2-9b-it

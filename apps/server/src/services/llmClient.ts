@@ -81,7 +81,7 @@ async function queryGemmaModel(params: RationaleParams): Promise<string | null> 
       : "http://127.0.0.1:11434/api/generate");
 
   const groqApiKey = process.env.GROQ_API_KEY;
-  const googleApiKey = process.env.GOOGLE_AI_KEY || process.env.GEMINI_API_KEY;
+  const googleApiKey = process.env.GEMMA_API_KEY || process.env.GOOGLE_AI_KEY || process.env.GEMINI_API_KEY;
 
   const prompt = `You are HustleRadar's open-source deal auditor and retail arbitrage advisor powered by Google Gemma 2.
 Evaluate this product deal strictly using the verified market evidence below. Do NOT hallucinate prices or retailers.

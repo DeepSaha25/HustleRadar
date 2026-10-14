@@ -35,6 +35,7 @@ app.use("/api/check-deal", checkDealRouter);
 
 app.get("/api/health", (_req, res) => {
   const llmConfigured = Boolean(
+    process.env.GEMMA_API_KEY?.trim() ||
     process.env.GEMINI_API_KEY?.trim() ||
     process.env.OPENAI_API_KEY?.trim() ||
     process.env.LLM_API_KEY?.trim(),
@@ -84,7 +85,7 @@ if (require.main === module) {
       `SerpApi provider: ${process.env.SERPAPI_KEY?.trim() ? "configured" : "not configured"}`,
     );
     console.log(
-      `Open-Source AI: Google Gemma 2 (${process.env.GROQ_API_KEY || process.env.GOOGLE_AI_KEY || process.env.OLLAMA_BASE_URL ? "active" : "deterministic baseline / ready for local Ollama"})`,
+      `Open-Source AI: Google Gemma 2 (${process.env.GEMMA_API_KEY || process.env.GOOGLE_AI_KEY || process.env.GEMINI_API_KEY || process.env.OLLAMA_BASE_URL ? "active" : "deterministic baseline / ready for local Ollama"})`,
     );
   });
 }
