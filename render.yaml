@@ -3,7 +3,7 @@ services:
   - type: web
     name: hustleradar-web
     env: static
-    buildCommand: npm run build --workspace=apps/web
+    buildCommand: npm install --include=dev && npm run build --workspace=apps/web
     staticPublishPath: ./apps/web/dist
     routes:
       - type: rewrite
@@ -21,7 +21,7 @@ services:
     name: hustleradar-api
     env: node
     plan: starter
-    buildCommand: npm install && npm run build --workspace=apps/server
+    buildCommand: npm install --include=dev && npm run build --workspace=apps/server
     startCommand: npm run start --workspace=apps/server
     envVars:
       - key: NODE_ENV
