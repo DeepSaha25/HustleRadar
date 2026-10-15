@@ -276,20 +276,12 @@ export async function collectEvidence(
   if (running) return { evidence: await running, fromCache: true };
   const promise = collectLive(query, signal, progress, forceRefresh);
   setInFlight(cacheKey, promise);
-  let evidence = await promise;
-  const totalItems = (evidence.shopping.items?.length || 0) + (evidence.retailers.items?.length || 0);
-  if (totalItems === 0 && (evidence.shopping.status === "error" || evidence.retailers.status === "error")) {
-    const fallback = fixture(query);
-    if (fallback.shopping.items.length > 0 || fallback.retailers.items.length > 0) {
-      fallback.shopping.warning = "Live search quota reached on SerpApi (HTTP 429); loaded verified market fixtures.";
-      evidence = fallback;
-    }
-  }
+  const evidence = await promise;
   const hasObservedSource = [
     evidence.shopping,
     evidence.retailers,
     evidence.context,
-  ].some((batch) => batch.status === "success" || batch.status === "empty" || batch.status === "demo");
+  ].some((batch) => batch.status === "success" || batch.status === "empty");
   // A provider outage is not useful evidence and should not poison the source
   // cache. Successful empty scans are still genuine observations and are safe to cache.
   const partialFailure = [evidence.shopping, evidence.retailers, evidence.context].some((batch) => batch.status === "error") || evidence.retailers.coverage?.some((store) => store.status === "error");
