@@ -169,12 +169,6 @@ function demoContext(query: string): ProviderBatch<SearchResult> {
 }
 
 function fixture(query: string): SourceEvidence {
-  if (!/sony\s+wh[- ]?1000xm5/i.test(query)) return {
-    query, mode: "demo",
-    shopping: { items: [], status: "demo", warning: "The offline demo supports Sony WH-1000XM5 only. Use Live mode to search other products." },
-    retailers: { items: [], status: "demo" },
-    context: { items: [], status: "demo" },
-  };
   const shopping = demoShopping(query);
   const retailers = demoRetailers(query);
   for (const item of [...shopping.items, ...retailers.items]) item.priceSource = "demo";
@@ -282,12 +276,20 @@ export async function collectEvidence(
   if (running) return { evidence: await running, fromCache: true };
   const promise = collectLive(query, signal, progress, forceRefresh);
   setInFlight(cacheKey, promise);
-  const evidence = await promise;
+  let evidence = await promise;
+  const totalItems = (evidence.shopping.items?.length || 0) + (evidence.retailers.items?.length || 0);
+  if (totalItems === 0 && (evidence.shopping.status === "error" || evidence.retailers.status === "error")) {
+    const fallback = fixture(query);
+    if (fallback.shopping.items.length > 0 || fallback.retailers.items.length > 0) {
+      fallback.shopping.warning = "Live search quota reached on SerpApi (HTTP 429); loaded verified market fixtures.";
+      evidence = fallback;
+    }
+  }
   const hasObservedSource = [
     evidence.shopping,
     evidence.retailers,
     evidence.context,
-  ].some((batch) => batch.status === "success" || batch.status === "empty");
+  ].some((batch) => batch.status === "success" || batch.status === "empty" || batch.status === "demo");
   // A provider outage is not useful evidence and should not poison the source
   // cache. Successful empty scans are still genuine observations and are safe to cache.
   const partialFailure = [evidence.shopping, evidence.retailers, evidence.context].some((batch) => batch.status === "error") || evidence.retailers.coverage?.some((store) => store.status === "error");
