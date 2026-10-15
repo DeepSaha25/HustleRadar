@@ -101,7 +101,7 @@ function MockupCard() {
             margin: '0 auto',
           }}
         >
-          hustleradar.tech/app
+          hustleradar.onrender.com/app
         </div>
       </div>
 

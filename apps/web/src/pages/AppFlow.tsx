@@ -68,7 +68,7 @@ function InputScreen({ draft, error, onSubmit, onBack }: { draft: Draft; error: 
       </div>}
       {(validation || error) && <p role="alert" className="mt-4 rounded-lg border border-red-400/20 bg-red-400/5 p-3 text-sm leading-relaxed text-red-200">{validation || error}</p>}
       <button id="check-deal-btn" type="submit" disabled={!input.trim()} className={`${primary} mt-6 w-full`}>{intent === 'check' ? 'Calculate flip margin' : 'Find cheapest source'} <span aria-hidden="true" className="ml-2">→</span></button>
-      <p className="mt-3 text-center text-xs text-zinc-400">Live data · 8+ retailers · Gemma 2 AI · Zero cloud cost</p>
+      <p className="mt-3 text-center text-xs text-zinc-400">Live data · 8+ retailers · Gemma 2 AI · Local inference available</p>
     </form>
     <div className="mt-6">
       <p className="mb-3 text-center text-xs text-zinc-400">Popular flips to try</p>

@@ -77,6 +77,10 @@ function generateDeterministicRationale(params: RationaleParams): string {
  * providing both deal authenticity and retail arbitrage advice for side hustlers.
  */
 async function queryGemmaModel(params: RationaleParams): Promise<string | null> {
+  if (/^(?:0|false|off|no)$/i.test(process.env.ENABLE_LLM?.trim() ?? "")) {
+    return null;
+  }
+
   const gemmaUrl =
     process.env.GEMMA_API_URL ||
     (process.env.OLLAMA_BASE_URL
@@ -200,4 +204,3 @@ export async function generateRationale(
   }
   return generateDeterministicRationale(params);
 }
-

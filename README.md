@@ -15,6 +15,11 @@
 
 ---
 
+## 🌐 Live Demo
+
+* **Live application:** [hustleradar.onrender.com](https://hustleradar.onrender.com/)
+* **Walkthrough video:** [YouTube demo](https://youtu.be/BsQCG8vhWxs)
+
 ## 💡 The Core Problem: Why Side Hustlers Lose Money on "Deals"
 
 Side hustlers, electronics flippers, dropshippers, and freelance studios purchase high-ticket inventory (MacBooks, cameras, audio gear, smartphones) to resell or run their business.
@@ -31,7 +36,7 @@ However, retail platforms deploy aggressive dark patterns:
 ## ⚡ Key Features
 
 * **⚡ Side Hustle Arbitrage Radar:** Computes gross & net margins based on the true market floor vs market median, deducting realistic 8% marketplace seller fees.
-* **🤖 Google Gemma 2 AI Audit:** Evaluates deal authenticity and provides structured flip recommendations without hallucination. Runs locally via Ollama (`gemma2:9b` / `gemma2:2b`) or open cloud inference.
+* **🤖 Google Gemma 2 AI Audit:** Turns retained market evidence into a side-hustle recommendation, with deterministic checks as the safety boundary. Runs locally via Ollama (`gemma2:9b` / `gemma2:2b`) or open cloud inference.
 * **🌐 Live Multi-Store Market Grounding:** Scans Amazon, Flipkart, Croma, Reliance Digital, and independent retailers simultaneously via SerpApi.
 * **🛡️ Strict Variant & Condition Filtering:** Excludes refurbished stock, accessories (cases/cables), and mismatched RAM/storage configurations so price comparisons are 100% like-for-like.
 * **📊 Scenario & Discount Stacking Calculator:** Lets buyers model bank card offers, instant coupons, and delivery costs with real-time recalculation.
@@ -47,9 +52,8 @@ HustleRadar is engineered to compete across multiple partner tracks in **Week 2:
 | :--- | :--- |
 | **Theme: Side Hustle (Grand Prize)** | Directly solves the core workflow problem for retail arbitrage flippers and freelance procurement: preventing bad inventory buys and calculating instant flip ROI. |
 | **Best Use of Gemma ($200)** | Integrates Google's **Gemma 2** (9B / 2B open-weights) via local Ollama or open inference API as the Deal Auditor & Arbitrage Advisor. |
-| **Best Use of SerpApi ($100)** | Uses SerpApi's `google_shopping` and retailer engines to provide real-time, tamper-proof web grounding for the Gemma model. |
-| **Best Use of Render ($200)** | Pre-configured with a root `render.yaml` blueprint for one-click full-stack deployment on Render. |
-| **Best Use of a .tech Domain ($100)** | Designed for deployment at `hustleradar.tech` using the free Hacktoberfest participant promo. |
+| **Best Use of SerpApi ($100)** | Uses SerpApi's `google_shopping` and retailer engines to provide source-linked web grounding for the Gemma model. |
+| **Best Use of Render ($200)** | Deployed at [hustleradar.onrender.com](https://hustleradar.onrender.com/) with separate frontend and API services defined by the Render blueprint. |
 
 ---
 
@@ -118,7 +122,7 @@ SERPAPI_KEY=your_serpapi_key_here
 OLLAMA_BASE_URL=http://127.0.0.1:11434
 GEMMA_MODEL_NAME=gemma2:9b
 ```
-*(Note: If no Gemma or SerpApi key is supplied, HustleRadar runs in **Demo Mode** with realistic local fixtures so you can test immediately without credentials!)*
+*(Note: Demo fixtures are explicit and labelled. Live mode never silently substitutes fixture data: without a SerpApi key, it reports insufficient live evidence. Set `ENABLE_LLM=false` to use the deterministic evidence-backed rationale without contacting a model provider.)*
 
 ### 5. Start the Application
 ```bash
@@ -135,7 +139,7 @@ Run the automated test suite across all listing guards, variant deduplication, a
 ```bash
 npm test
 ```
-All 23 unit tests run with zero mock leakage.
+All 24 automated tests pass, including live/demo separation, provider filtering, variant matching, and streaming behavior.
 
 ---
 

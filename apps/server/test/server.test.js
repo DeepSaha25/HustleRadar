@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const http = require("node:http");
+const axios = require("axios");
 
 // Keep the suite offline even when a developer's repository .env has a key.
 process.env.HUSTLERADAR_SKIP_ENV = "true";
@@ -15,6 +16,7 @@ const {
 } = require("../dist/services/validation.js");
 const { parsePrice } = require("../dist/services/serpapiClient.js");
 const cache = require("../dist/db/cache.js");
+const { generateRationale } = require("../dist/services/llmClient.js");
 
 let server;
 let baseUrl;
@@ -35,6 +37,29 @@ test("query sanitization preserves model identity and provider prices stay INR-o
   assert.equal(parsePrice("$249"), 0);
   assert.equal(parsePrice("₹24,999"), 24999);
   assert.equal(parsePrice("INR 24,999"), 24999);
+});
+
+test("disabled Gemma uses the deterministic rationale without network calls", async (t) => {
+  let calls = 0;
+  t.mock.method(axios, "post", async () => {
+    calls++;
+    throw new Error("model provider should not be contacted");
+  });
+  const rationale = await generateRationale({
+    verdict: "market_overview",
+    confidence: "high",
+    cheapestSeller: {
+      name: "Amazon",
+      title: "Sony WH-1000XM5",
+      price: 24990,
+      link: "https://www.amazon.in/dp/B09XS7JWHH",
+    },
+    medianPrice: 25999,
+    historicalMentions: [],
+    productTitle: "Sony WH-1000XM5",
+  });
+  assert.equal(calls, 0);
+  assert.match(rationale, /Market median across competing stores is/);
 });
 
 test("listing guards exclude accessories, refurbished items, and wrong models while preserving titles", () => {
