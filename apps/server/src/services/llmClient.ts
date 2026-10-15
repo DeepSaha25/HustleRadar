@@ -40,9 +40,12 @@ function generateDeterministicRationale(params: RationaleParams): string {
 
   let baseText = "";
   if (verdict === "market_overview") {
-    baseText = medianPrice
-      ? `Market overview: no offer price was supplied. The verified median across competing retail listings is ${formatPrice(medianPrice)}.`
-      : "Market overview: no offer price was supplied, but no relevant INR listings were available.";
+    if (arbitrage && arbitrage.opportunityScore !== "UNPROFITABLE") {
+      return `Market median is ${formatPrice(medianPrice!)}. Sourcing at ${formatPrice(cheapestSeller?.price ?? 0)} from ${cheapestSeller?.name ?? "lowest seller"} leaves ~${formatPrice(arbitrage.netProfit)} net margin (${arbitrage.marginPercent}% after 8% fees).`;
+    }
+    return medianPrice
+      ? `Market median across competing stores is ${formatPrice(medianPrice)}.`
+      : "No competing store prices available for comparison.";
   } else if (verdict === "insufficient_data") {
     baseText = `Insufficient verified INR seller evidence to guarantee deal authenticity${claimedPrice ? ` at ${formatPrice(claimedPrice)}` : ""}. Treat this report as preliminary.`;
   } else if (verdict === "genuine_deal") {
@@ -62,7 +65,7 @@ function generateDeterministicRationale(params: RationaleParams): string {
   }
 
   if (arbitrage && arbitrage.opportunityScore !== "UNPROFITABLE") {
-    baseText += ` [HustleRadar Arbitrage: ${arbitrage.hustleAdvice}]`;
+    baseText += ` Arbitrage outlook: ${arbitrage.hustleAdvice}`;
   }
 
   return baseText;

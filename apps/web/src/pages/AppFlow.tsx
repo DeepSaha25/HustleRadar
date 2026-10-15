@@ -104,12 +104,11 @@ function ResultScreen({ result, error, canChangeModel, onEdit, onNew, onSelect, 
   const choosing = result.comparison?.status === 'needs_selection';
   const [chartsOpen, setChartsOpen] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
-  return <main className="mx-auto w-full max-w-4xl min-w-0 space-y-5 px-3 pb-12 pt-5 sm:px-6">
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  return <main className="mx-auto w-full max-w-4xl min-w-0 space-y-3.5 px-3 pb-12 pt-3 sm:px-6">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">{choosing ? 'Product found' : 'Your price comparison'}</p>
-        <h1 id="deal-page-title" tabIndex={-1} className="mt-2 break-words text-xl font-semibold leading-snug text-white outline-none sm:text-2xl">{result.comparison?.selectedVariant ?? result.product.title}</h1>
-        {result.product.claimedPrice && <p className="mt-2 text-sm text-zinc-300">Your offer: <strong className="text-white">{fmt(result.product.claimedPrice)}</strong>{result.product.claimedOriginalPrice ? <span className="ml-3 text-xs text-zinc-400">Original shown: {fmt(result.product.claimedOriginalPrice)}</span> : null}</p>}
+        <h1 id="deal-page-title" tabIndex={-1} className="break-words text-lg font-bold leading-tight text-white outline-none sm:text-xl">{result.comparison?.selectedVariant ?? result.product.title}</h1>
+        {result.product.claimedPrice && <p className="mt-1 text-xs text-zinc-400">Offer: <strong className="text-white">{fmt(result.product.claimedPrice)}</strong>{result.product.claimedOriginalPrice ? <span className="ml-2.5 text-zinc-500">MRP: {fmt(result.product.claimedOriginalPrice)}</span> : null}</p>}
       </div>
       <div className="flex shrink-0 flex-wrap gap-2"><button type="button" onClick={onEdit} className={secondary}>Edit search</button>{!choosing && canChangeModel && <button type="button" onClick={onChangeModel} className={secondary}>Change model</button>}</div>
     </div>

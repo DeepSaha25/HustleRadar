@@ -15,3 +15,6 @@ artifacts/
 frame_*.jpg
 session-*.md
 rebuild_commits.ps1
+
+*.mov
+*.mp4

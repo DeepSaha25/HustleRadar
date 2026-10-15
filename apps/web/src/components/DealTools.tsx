@@ -6,48 +6,85 @@ const fmt = (n: number | null | undefined) =>
 
 export function VerdictHeader({ result, onAddPrice }: { result: CheckDealResult; onAddPrice?: () => void }) {
   const copy = {
-    market_overview: { title: 'Live price comparison', color: 'text-white' },
-    genuine_deal: { title: 'Worth flipping — good margin', color: 'text-green-400' },
-    inflated_discount: { title: 'Tight margin — check carefully', color: 'text-amber-400' },
-    not_actually_cheap: { title: 'Skip it — cheaper source exists', color: 'text-red-300' },
-    insufficient_data: { title: 'Not enough data to score this flip', color: 'text-zinc-200' },
+    market_overview: { title: 'Live Price Comparison', color: 'text-white' },
+    genuine_deal: { title: 'Worth Flipping — High Margin', color: 'text-emerald-400' },
+    inflated_discount: { title: 'Tight Margin — Check Carefully', color: 'text-amber-400' },
+    not_actually_cheap: { title: 'Skip It — Cheaper Source Exists', color: 'text-red-400' },
+    insufficient_data: { title: 'Not Enough Data to Score', color: 'text-zinc-300' },
   }[result.verdict];
   const hasComparison = result.sellers.length >= 2;
+
+  const cleanRationale = result.rationale
+    ? result.rationale.replace(/\[HustleRadar Arbitrage:\s*/g, '').replace(/\]/g, '').trim()
+    : null;
+
   return (
-    <section className="deal-surface p-5 sm:p-6" aria-label="Price summary">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className={`text-xl font-semibold ${copy.color}`}>{copy.title}</h2>
-        <span className="text-xs text-zinc-400">{result.sellers.length} matching retailer{result.sellers.length === 1 ? '' : 's'}</span>
+    <section className="deal-surface p-4 sm:p-5" aria-label="Price summary">
+      <div className="flex items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
+        <h2 className={`text-base font-semibold sm:text-lg ${copy.color}`}>{copy.title}</h2>
+        <span className="rounded-full bg-white/[0.05] px-2.5 py-1 text-[11px] font-medium text-zinc-400 border border-white/[0.08]">
+          {result.sellers.length} {result.sellers.length === 1 ? 'retailer' : 'retailers'}
+        </span>
       </div>
-      {result.verdict === 'market_overview' && (
-        <p className="mt-3 text-sm leading-relaxed text-zinc-300">
-          Prices below are for the same model. Start with the lowest listing, or calculate your flip margin to check resale profit.
-        </p>
-      )}
-      {result.rationale && (
-        <div className="mt-4 rounded-xl border-l-2 border-amber-400/50 bg-amber-400/[0.04] pl-4 pr-3 py-3">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-amber-400/70 mb-1.5">AI Analysis · Gemma 2</p>
-          <p className="text-sm leading-relaxed text-zinc-300">{result.rationale}</p>
+
+      {cleanRationale && (
+        <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/[0.04] px-3.5 py-2.5">
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)] animate-pulse" />
+            <p className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-semibold">AI Analysis · Gemma 2</p>
+          </div>
+          <p className="text-xs leading-relaxed text-zinc-300">{cleanRationale}</p>
         </div>
       )}
-      {result.sellers.length > 0 && <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Stat label="Cheapest source price" value={fmt(result.cheapestSeller?.price)} hint={result.cheapestSeller?.name ?? 'Matching listing'} accent="green" />
-        <Stat
-          label="Market median (resale floor)"
-          value={hasComparison ? fmt(result.medianPrice) : 'Not enough prices'}
-          hint="Median across all matching retailers"
-        />
-        <Stat
-          label={result.product.claimedPrice ? 'Your offer price' : 'Retailers compared'}
-          value={
-            result.product.claimedPrice ? fmt(result.product.claimedPrice) : String(result.sellers.length)
-          }
-          hint={result.marketDiscountPercent == null ? 'Same model and specifications' : `${Math.abs(result.marketDiscountPercent)}% ${result.marketDiscountPercent >= 0 ? 'below' : 'above'} the typical price`}
-        />
-      </div>}
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        {result.cheapestSeller && <a href={result.cheapestSeller.link} target="_blank" rel="noopener noreferrer" className="inline-flex w-full items-center justify-center rounded-xl bg-amber-400 px-4 py-3 text-center text-sm font-semibold text-black hover:bg-amber-300 sm:w-auto">View lowest at {result.cheapestSeller.name} ↗</a>}
-        {!result.product.claimedPrice && hasComparison && onAddPrice && <button type="button" onClick={onAddPrice} className="w-full rounded-xl border border-white/15 px-4 py-3 text-sm text-white hover:border-amber-400 sm:w-auto">Calculate flip margin</button>}
+
+      {result.sellers.length > 0 && (
+        <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+          <Stat
+            label="Cheapest Source"
+            value={fmt(result.cheapestSeller?.price)}
+            hint={result.cheapestSeller?.name ?? 'Best offer'}
+            accent="green"
+          />
+          <Stat
+            label="Market Median"
+            value={hasComparison ? fmt(result.medianPrice) : '—'}
+            hint="Resale floor"
+          />
+          <Stat
+            label={result.product.claimedPrice ? 'Your Offer' : 'Stores Matched'}
+            value={
+              result.product.claimedPrice ? fmt(result.product.claimedPrice) : `${result.sellers.length} stores`
+            }
+            hint={
+              result.product.claimedPrice && result.marketDiscountPercent != null
+                ? `${Math.abs(result.marketDiscountPercent)}% ${result.marketDiscountPercent >= 0 ? 'below' : 'above'} median`
+                : 'Live verified'
+            }
+          />
+        </div>
+      )}
+
+      <div className="mt-3.5 flex flex-col gap-2 sm:flex-row sm:items-center">
+        {result.cheapestSeller && (
+          <a
+            href={result.cheapestSeller.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-400 px-4 py-2 text-center text-xs font-semibold text-black transition hover:bg-amber-300 sm:w-auto"
+          >
+            <span>View lowest at {result.cheapestSeller.name}</span>
+            <span>↗</span>
+          </a>
+        )}
+        {!result.product.claimedPrice && hasComparison && onAddPrice && (
+          <button
+            type="button"
+            onClick={onAddPrice}
+            className="rounded-lg border border-white/15 px-4 py-2 text-xs font-medium text-white transition hover:border-amber-400 hover:text-amber-300 sm:w-auto"
+          >
+            Calculate flip margin
+          </button>
+        )}
       </div>
     </section>
   );
@@ -65,16 +102,16 @@ function Stat({
   accent?: "white" | "green" | "amber";
 }) {
   const color =
-    accent === "green" ? "#22c55e" : accent === "amber" ? "#f59e0b" : "#f0f0f8";
+    accent === "green" ? "#34d399" : accent === "amber" ? "#fbbf24" : "#ffffff";
   return (
-    <div className="rounded-xl border border-white/8 bg-white/[0.03] p-3">
-      <div className="text-xs font-medium text-zinc-400">
+    <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3.5 py-2.5 transition hover:border-white/15">
+      <div className="text-[11px] font-medium text-zinc-400">
         {label}
       </div>
-      <div className="mt-2 text-lg font-semibold" style={{ color }}>
+      <div className="mt-1 text-base font-bold tracking-tight" style={{ color }}>
         {value}
       </div>
-      <div className="mt-1 text-xs leading-relaxed text-zinc-400">{hint}</div>
+      <div className="mt-0.5 text-[11px] text-zinc-400">{hint}</div>
     </div>
   );
 }
