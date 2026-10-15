@@ -18,5 +18,9 @@
     "@playwright/test": "^1.63.0",
     "concurrently": "^10.0.5",
     "prettier": "^3.9.9"
+  },
+  "dependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
   }
 }
