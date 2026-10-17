@@ -656,9 +656,9 @@ I am entering only categories that the repository and deployed application can s
 
 HustleRadar is built around a concrete side-hustle decision: **should I buy this item if I want a realistic resale margin?** It targets a small, specific user group and turns market research, product matching and fee arithmetic into a repeatable workflow.
 
-![HustleRadar side-hustle report showing the deal verdict, market prices and resale margin](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/10-final-report.png)
+![HustleRadar landing page presenting the side-hustle resale workflow](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev-ss/01-landing-page.png)
 
-The complete buyer decision screen brings together the verdict, matching-retailer count, cheapest source, market median, offer price and fee-adjusted resale margin. This is the side-hustle outcome the product is designed to support: deciding whether inventory is worth buying before committing cash.
+The landing page presents the side-hustle use case before the analysis begins: identify a product, scan retailer prices, account for marketplace fees and decide whether the item is worth flipping. The workflow is designed for people making inventory decisions with their own cash.
 
 ### 🤖 Best Use of Gemma
 
