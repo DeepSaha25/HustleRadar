@@ -652,7 +652,7 @@ If you buy or flip electronics, I would like to know which fee, marketplace or p
 
 I am entering only categories that the repository and deployed application can substantiate:
 
-### 🏆 Theme: Side Hustle
+### Theme: Side Hustle
 
 HustleRadar is built around a concrete side-hustle decision: **should I buy this item if I want a realistic resale margin?** It targets a small, specific user group and turns market research, product matching and fee arithmetic into a repeatable workflow.
 
@@ -660,7 +660,7 @@ HustleRadar is built around a concrete side-hustle decision: **should I buy this
 
 The landing page presents the side-hustle use case before the analysis begins: identify a product, scan retailer prices, account for marketplace fees and decide whether the item is worth flipping. The workflow is designed for people making inventory decisions with their own cash.
 
-### 🤖 Best Use of Gemma
+### Best Use of Gemma
 
 HustleRadar uses Google's open-weight **Gemma 2** as a bounded deal auditor and resale advisor. The verified local path runs `gemma2:9b` through Ollama at `http://127.0.0.1:11434`. Gemma receives a structured prompt containing the normalized product, deterministic verdict, confidence, claimed price, market median, lowest comparable listing and fee-adjusted arbitrage result.
 
@@ -688,7 +688,7 @@ Evidence in the repository:
 - `apps/server/src/routes/checkDeal.ts` — deterministic verdict and arbitrage calculation before rationale generation;
 - `apps/server/test/server.test.js` — offline test proving disabled Gemma causes zero network calls and still returns a rationale.
 
-### 🔎 Best Use of SerpApi
+### Best Use of SerpApi
 
 SerpApi is the market-data adapter, not the decision-maker. A live scan fans out into three independently tracked evidence paths:
 
@@ -726,7 +726,7 @@ Relevant implementation:
 - `apps/server/src/services/retailers.ts` — domain allowlist and brand/region-aware retailer selection;
 - `apps/server/src/services/evidenceService.ts` — concurrent evidence orchestration, cache mode separation and provider status.
 
-### 🚀 Best Use of Render
+### Best Use of Render
 
 The live application is deployed at [hustleradar.onrender.com](https://hustleradar.onrender.com/). The deployment is described as infrastructure in code through `render.yaml`, with a static frontend service and a Node/Express API service.
 
