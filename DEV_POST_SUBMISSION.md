@@ -354,29 +354,38 @@ HustleRadar is built around a simple architectural rule:
 
 ### The architecture
 
-```text
-Browser
-  React + TypeScript + Vite
-      │
-      │ POST /api/check-deal/stream
-      ▼
-Node + Express API
-  ├─ query and URL validation
-  ├─ SerpApi shopping search
-  ├─ retailer-specific search
-  ├─ dated context search
-  ├─ product/variant/condition filters
-  ├─ median + fee + scenario calculator
-  ├─ Gemma 2 rationale (optional)
-  └─ deterministic rationale fallback
-      │
-      ▼
-Report
-  ├─ verdict and confidence
-  ├─ price comparison matrix
-  ├─ arbitrage margin
-  ├─ evidence receipts
-  └─ warnings and provider coverage
+```mermaid
+flowchart TD
+    A[Browser<br/>React + TypeScript + Vite] -->|POST /api/check-deal/stream| B[Node + Express API]
+
+    B --> C[Query and URL validation]
+    C --> D{Evidence mode}
+
+    D -->|Live| E1[SerpApi shopping search]
+    D -->|Live| E2[Retailer-specific searches]
+    D -->|Live| E3[Dated context search]
+    D -->|Demo| E4[Explicit demo fixtures]
+
+    E1 --> F[Evidence batches<br/>status, prices, links, timestamps]
+    E2 --> F
+    E3 --> F
+    E4 --> F
+
+    F --> G[Product, variant,<br/>condition and INR filters]
+    G --> H[Median, fee and<br/>scenario calculations]
+
+    H --> I{Gemma enabled<br/>and available?}
+    I -->|Yes| J[Gemma 2 rationale<br/>constrained by evidence]
+    I -->|No or unavailable| K[Deterministic rationale<br/>fallback]
+
+    J --> L[Decision report]
+    K --> L
+
+    L --> M[Verdict and confidence]
+    L --> N[Price comparison matrix]
+    L --> O[Arbitrage margin]
+    L --> P[Evidence receipts]
+    L --> Q[Warnings and provider coverage]
 ```
 
 ### 1. Ground the model with multiple search paths
