@@ -484,8 +484,6 @@ services:
 
 The frontend receives the API host through a Render service reference. SerpApi and Gemma keys are `sync: false`, so the credentials are configured in Render rather than committed to the repository. The health endpoint reports service status, provider configuration, optional LLM configuration, analysis version and timestamp.
 
-Render hosts the application and API. It is not described here as the place where the local Ollama model runs; the verified local model path is `gemma2:9b` through Ollama on the developer machine.
-
 ### 9. The reproducibility boundary is explicit
 
 The test suite is intentionally offline. Provider calls are mocked or disabled, so the tests prove the adapter contracts and failure behavior without pretending to prove an external quota or model endpoint. The current checks are:
@@ -679,7 +677,13 @@ Evidence in the repository:
 
 ### 🔎 Best Use of SerpApi
 
-SerpApi is the fresh-market grounding layer. HustleRadar uses three search paths: `google_shopping` for offers, retailer-restricted Google searches for store coverage and dated Google context for price mentions. They run concurrently, preserve provider status and feed a validation layer before any number reaches the median or margin calculation.
+SerpApi is the market-data adapter, not the decision-maker. A live scan fans out into three independently tracked evidence paths:
+
+1. `google_shopping` discovers offer cards and can resolve Google immersive-product tokens into actual merchant stores;
+2. retailer-restricted `google` searches run with `as_sitesearch` for each selected retailer;
+3. a dated `google` context search uses `tbs: "qdr:y"` to collect recent price mentions and market context.
+
+The evidence service starts these paths with `Promise.all`. Each path returns a typed batch with `success`, `empty` or `error` status, excluded-row counts, warnings and (for retailer searches) per-store coverage. A timeout or HTTP 200 response containing a SerpApi error is therefore not treated as an empty market.
 
 ![HustleRadar prices-by-store view showing comparable retailer evidence](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/02-prices-by-store.png)
 
@@ -691,12 +695,16 @@ SerpApi is the fresh-market grounding layer. HustleRadar uses three search paths
 
 The integration is more than a search-box call:
 
-- Google Shopping rows require an actual allowlisted retailer product URL and a usable INR price;
-- foreign currencies, EMI/monthly prices, “from” ranges and ambiguous promotional text are excluded;
-- retailer-restricted candidates are verified against the retailer page where possible;
+- every request is sent to `https://serpapi.com/search.json` with `gl=in`, `hl=en`, a bounded timeout and an `AbortSignal`;
+- Google Shopping rows require an actual allowlisted retailer product URL and a usable INR price; a numeric field alone is not enough when currency is missing;
+- foreign currencies, EMI/monthly prices, MRP, “from” ranges and ambiguous promotional text are excluded before aggregation;
+- retailer-restricted candidates are canonicalized, deduplicated by URL, capped, then verified against the retailer page with bounded concurrency;
+- verified results are checked again for model identity, variant, condition, availability, plausible price and retailer domain;
 - source labels distinguish retailer-page, Google Shopping, search-index and demo prices;
 - coverage warnings remain visible when a store fails or has no matching configuration;
 - a provider error never becomes a successful empty scan or demo evidence.
+
+The resulting source records retain the canonical URL, normalized retailer, INR price, title, availability, timestamp, price source and validation outcome. Only records that survive those guards reach the median, cheapest-source and fee-adjusted margin calculations. This is the technical reason the UI can show a useful `insufficient_data` result instead of manufacturing a comparison from unrelated search hits.
 
 Relevant implementation:
 
@@ -707,7 +715,19 @@ Relevant implementation:
 
 ### 🚀 Best Use of Render
 
-The live application is deployed at [hustleradar.onrender.com](https://hustleradar.onrender.com/). The repository includes a Render Blueprint with two services: a static Vite/React frontend and a Node/Express API. The frontend gets the API host from a Render service reference, while `SERPAPI_KEY` and `GEMMA_API_KEY` are marked `sync: false` and stay in deployment configuration.
+The live application is deployed at [hustleradar.onrender.com](https://hustleradar.onrender.com/). The deployment is described as infrastructure in code through `render.yaml`, with a static frontend service and a Node/Express API service.
+
+The request path is:
+
+```text
+Browser → hustleradar-web (Vite static assets)
+       → VITE_API_URL from Render service reference
+       → hustleradar-api (Express)
+       → /api/check-deal, /api/check-deal/stream, /api/resolve-product
+       → SerpApi + optional Gemma provider
+```
+
+The frontend service builds `apps/web` and publishes `apps/web/dist`. Its catch-all rewrite sends client-side routes to `index.html`. The API service builds `apps/server`, listens on Render's `PORT` (the Blueprint defaults it to `10000`) and exposes JSON/NDJSON endpoints. `/api/check-deal/stream` emits progress events while the three evidence paths run, so the browser can render provider-level progress instead of waiting for one opaque request.
 
 ![HustleRadar Render health endpoint showing service and provider configuration](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/07-render-health.png)
 
@@ -728,9 +748,9 @@ The Render-specific implementation is visible and reviewable:
   startCommand: npm run start --workspace=apps/server
 ```
 
-Render hosts the web application and API. It is not described as hosting the developer’s local Ollama process; the local Gemma path and the deployed service configuration are kept distinct.
+Runtime configuration is kept outside the repository: `SERPAPI_KEY` and `GEMMA_API_KEY` are `sync: false`, while `GEMMA_MODEL_NAME` is configured as a deployment variable. The web service receives the API hostname through `fromService`, so the frontend does not hard-code a machine-local URL. The API disables `x-powered-by`, limits JSON request bodies to 100 KB, configures CORS from environment, and keeps `/api/*` routes separate from the frontend fallback.
 
-I am not claiming a `.tech`, DigitalOcean, ElevenLabs, Tinker, Backboard, Sentry or other partner category because this project does not have verified use of those services.
+The health contract is intentionally machine-readable. `GET /api/health` returns service status, SerpApi configuration state, optional LLM configuration state, the analysis version and an ISO timestamp. That endpoint is suitable for deployment verification without exposing credentials or provider payloads.
 
 ---
 
