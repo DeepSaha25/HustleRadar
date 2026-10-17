@@ -1,135 +1,499 @@
 ---
-title: HustleRadar — The Open-Source AI Arbitrage & Deal Radar for Side Hustlers (Powered by Gemma 2 & SerpApi)
-published: true
+title: A ₹7,000 discount can still be a bad deal — I built HustleRadar to audit the flip before you buy
+published: false
 tags: devchallenge, hf26challenge, gemma, opensource
 ---
 
-*This is a submission for the [Hacktoberfest Open-Source AI Challenge Week 2: Side Hustle](https://dev.to/challenges/hacktoberfest-week2-2026-10-12)*
+*This is a submission for the [Hacktoberfest Open-Source AI Challenge Week 2: Side Hustle](https://dev.to/challenges/hacktoberfest-week2-2026-10-12).*
+
+> **The challenge:** build something with open-source AI at its core that someone would actually pay for. Think small, specific and useful — then explain what open innovation made possible that a closed API would not.
+
+# A ₹7,000 discount can still be a bad deal
+
+I built **HustleRadar** because a crossed-out price is not the same thing as a profitable resale opportunity.
+
+₹15,000 against a displayed reference price of ₹22,000 looks like an instant ₹7,000 saving. But a reseller still has to answer harder questions:
+
+- Is the reference price meaningful, or was it inflated for the sale?
+- What are other stores charging for the exact same variant today?
+- What price could I realistically sell it for?
+- What remains after marketplace fees, delivery, coupons and other costs?
+- Is this a real opportunity, or just a convincing product page?
+
+HustleRadar turns those questions into one evidence-backed workflow: **enter a product and an offer price, compare the market, calculate the exit margin, then ask an open-weight model to explain the result.**
+
+![HustleRadar report showing a deal verdict, retailer prices, market median and resale margin](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/10-final-report.png)
+
+*The report above is a labelled, reproducible demo scenario. It is included to show the product flow; it is not presented as a claim that those particular prices are live today.*
+
+## The short version
+
+- 🌐 **[Try the live application](https://hustleradar.onrender.com/)**
+- 🎥 **[Watch the walkthrough on YouTube](https://youtu.be/BsQCG8vhWxs)**
+- 🐙 **[Read the source on GitHub](https://github.com/DeepSaha25/HustleRadar)**
+- ❤️ **[Check the deployed health endpoint](https://hustleradar.onrender.com/api/health)**
+- 🧪 **24 automated tests pass**, including live/demo separation, variant matching and streaming behavior
+
+The application is built for people who buy expensive inventory with their own money: electronics flippers, retail arbitrage beginners, freelance studios, photographers, video editors and small e-commerce operators.
+
+The promise is deliberately narrow:
+
+> **Do not buy because a product page says “discount”. Buy only after you can see the market, the fee-adjusted exit price and the evidence behind the recommendation.**
 
 ---
 
-## ⚡ What I Built
+## What I Built
 
-**HustleRadar** is an open-source AI market intelligence and retail arbitrage radar built for side hustlers, e-commerce flippers, and freelance studios.
+HustleRadar is an open-source **market evidence and arbitrage decision tool**. It is not a general-purpose shopping chatbot and it does not pretend that a language model can see the web by itself.
 
-### The Problem
-During festive sales (Amazon Great Indian Festival, Flipkart Big Billion Days, Diwali/Clearance events), e-commerce platforms deploy aggressive dark patterns:
-* **Artificial MRP Anchoring:** Retailers artificially inflate reference prices (e.g. marking a ₹32,000 camera lens up to ₹55,000 to advertise a fake "45% discount").
-* **The "Clearance Trap":** Beginners buy clearance inventory assuming high profit margins, only to discover competitor stores sell that exact SKU even cheaper every day.
-* **Closing Fee Realities:** Side hustlers frequently forget that marketplace commissions (8–15%) and return risks eliminate thin margins.
+The user enters:
 
-### Who Would Pay For This?
-* **Retail Arbitrageurs & Flippers:** People who source discounted electronics, audio gear, and laptops from one platform to flip on OLX, eBay, Amazon FBA, or local marketplaces. A single bad buy leaves them stuck with thousands of dollars in dead inventory. Resellers happily pay **$15–$25/month** for tools that prevent bad inventory buys and surface real margin opportunities.
-* **Freelance Creative Studios & Remote Agencies:** Video editors, photographers, and indie developers spending significant capital on MacBooks, cameras, and studio gear who need an un-biased procurement auditor to verify price floors and stack bank discounts.
+1. A product name or product URL
+2. The price they would actually pay
+3. An optional original/reference price
+4. An optional live or demo mode
 
-HustleRadar scans multi-store market listings in real time, calculates true market medians, deduces realistic 8% marketplace fees, and runs Google Gemma 2 (open-weights) to evaluate deal authenticity and flip feasibility.
+The product then runs a complete decision loop:
+
+1. **Collect evidence** from shopping results, selected retailers and dated context.
+2. **Normalize the product identity** so accessories, refurbished listings and wrong variants do not pollute the comparison.
+3. **Calculate the market picture**: lowest observed price, median price, source coverage and fee-adjusted resale margin.
+4. **Show the evidence** with retailer names, links, prices, timestamps and coverage warnings.
+5. **Use Google Gemma 2** to turn those structured facts into a short, practical explanation for a buyer or side hustler.
+6. **Fall back safely** to a deterministic evidence-backed rationale if the model is disabled or unavailable.
+
+### Start with a product, not a conversation
+
+The input screen is intentionally small. A reseller should be able to paste a product, type the real buy price and start the check without writing a prompt.
+
+![HustleRadar input screen with Sony WH-1000XM5, a ₹15,000 offer price and a ₹22,000 reference price](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/12-input-screen.png)
+
+The interface also makes the boundary visible: **live data, multiple retailers, Gemma 2 AI and local inference availability** are capabilities of the system, not a guarantee that every provider will always respond.
+
+### Compare the market instead of trusting the banner
+
+HustleRadar compares the product across multiple stores and keeps the source attached to each number. The point is not to produce the biggest discount percentage; it is to find the price floor and the price range a real buyer may encounter.
+
+![HustleRadar price comparison view showing prices by store](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/02-prices-by-store.png)
+
+### Make the resale calculation explicit
+
+The report separates the numbers that are usually mixed together on a product page:
+
+- sourcing price — what the user pays
+- market floor — the lowest comparable listing found
+- market median — a less fragile view of the market than one outlier
+- estimated resale fee — currently modelled as an 8% marketplace fee
+- net resale margin — what remains after the fee and sourcing cost
+
+![HustleRadar arbitrage report showing resale margin and flip feasibility](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/03-resale-arbitrage-margin.png)
+
+The simplified calculation is:
+
+```text
+estimated net profit = expected resale price × (1 − marketplace fee) − sourcing price
+```
+
+Delivery, coupons and bank discounts can be modelled in the scenario calculator rather than hidden inside a single optimistic percentage.
+
+![HustleRadar scenario calculator for bank discounts, delivery fees and coupons](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/05-scenario-calculator.png)
+
+### Show why the recommendation exists
+
+The most important part of an AI recommendation is not the adjective “good” or “bad”. It is whether a person can inspect the path from source evidence to conclusion.
+
+The evidence view exposes the coverage and provenance behind the report:
+
+![HustleRadar evidence coverage view showing source status and market evidence](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/04-evidence-coverage.png)
+
+That makes the app useful even when the answer is **“insufficient data”**. A missing market observation is safer than a confident-looking number invented to complete the card.
+
+### Protect the comparison from near matches
+
+“Sony WH-1000XM5” should not be compared with WH-1000XM4, replacement ear pads, a protective case or a refurbished unit. HustleRadar applies product and condition checks before prices enter the calculation.
+
+![HustleRadar variant selection screen for narrowing the exact product match](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/06-variant-selection.png)
+
+This is a small detail with a large effect: a ₹999 accessory can make an apparently excellent margin if it is allowed into a ₹25,000 headphone comparison.
 
 ---
 
-## 🎥 Demo
+## Demo
 
-* 🌐 **Live Web Application:** [https://hustleradar.vercel.app](https://hustleradar.vercel.app) *(or deployed via Render)*
-* 🎥 **Walkthrough Video:** [YouTube Video Walkthrough](https://youtu.be/ZruTcO9Xk6k)
+### Live mode, demo mode and honest failure
 
-### Key Screens & Capabilities:
-1. **⚡ Side Hustle Arbitrage Radar:** Displays Sourcing Cost (Buy price), Market Median (Target sell price), Estimated 8% Resale Fees, and Projected Net Margin (₹ and % ROI).
-2. **🤖 Gemma 2 Deal Auditor:** Produces non-hallucinatory verdicts strictly grounded in verified SerpApi store evidence.
-3. **Multi-Store Price Comparison Matrix:** Direct comparisons across Amazon, Flipkart, Croma, Reliance Digital, and independent retailers.
-4. **Scenario Calculator:** Adjusts bank card discounts, delivery fees, and coupons with reactive recalculations.
+You can try the application at **[hustleradar.onrender.com](https://hustleradar.onrender.com/)**. The walkthrough is on **[YouTube](https://youtu.be/BsQCG8vhWxs)**.
 
----
+The application has two explicit evidence modes:
 
-## 💻 Code
+- **Live mode** calls the configured search providers and reports the provider status it actually receives.
+- **Demo mode** loads clearly labelled fixtures so the complete UI can be demonstrated without an API key, quota or unstable retailer pages.
 
-* 🐙 **GitHub Repository:** [https://github.com/DeepSaha25/HustleRadar](https://github.com/DeepSaha25/HustleRadar) *(HustleRadar)*
+The screenshots in this article use the stable demo scenario where indicated. That is intentional: the article should remain reproducible instead of quietly turning a quota failure into a fake live result.
 
-Built as a high-performance monorepo with:
-* **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, Lucide icons, Framer Motion, and Glassmorphic/Brutalist data visualization.
-* **Backend:** Node.js, Express, TypeScript, NDJSON streaming, and in-memory TTL caching.
-* **AI & Search Engines:** Google Gemma 2 (Ollama / Open-Weights API) + SerpApi (`google_shopping` and retailer engines).
+If a live provider fails, the report remains `live`, has no fabricated demo sellers, and can return `insufficient_data`. Demo fixtures are only loaded when the caller explicitly requests `mode: "demo"`.
+
+![Render dashboard showing the live HustleRadar service and the deployed commit](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/13-render-deployment.png)
+
+![Render health endpoint and deployment verification for HustleRadar](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/07-render-health.png)
 
 ---
 
-## 🛠️ How I Built It
+## Code
 
-HustleRadar is engineered around two core technical pillars: **deterministic multi-source web grounding** and **open-weight AI synthesis**.
+### Repository
 
-### 1. Grounding Open-Source AI in Live Web Truth (SerpApi)
-An AI model is only as good as the ground-truth data you feed it. Rather than letting the model guess whether ₹49,999 is a good price for a laptop, the backend coordinates three simultaneous search vectors using SerpApi:
-* `google_shopping` engine: Gathers active, structured merchant offers across Indian retail channels.
-* Retailer-restricted search: Queries direct retail domains (Croma, Reliance Digital, Vijay Sales) to extract live checkout prices that aggregators omit.
-* Temporal context engine: Examines historical indexed mentions to understand price evolution.
+The complete source is available here:
 
-### 2. Strict Model & Variant Normalization
-Raw e-commerce data is notoriously messy. A search for "MacBook M3" often returns cases, sleeves, refurbished units, or different RAM configurations. HustleRadar runs multi-stage regex and keyword guardrails to reject non-matching configurations so every comparison is 100% like-for-like.
+> **[github.com/DeepSaha25/HustleRadar](https://github.com/DeepSaha25/HustleRadar)**
 
-### 3. Open-Weight AI Reasoning with Google Gemma 2
-Once the price matrix is verified, HustleRadar invokes **Google Gemma 2 (9B / 2B)**:
-* **Local Inference via Ollama:** When running on a local machine or private server, HustleRadar communicates with Ollama (`http://127.0.0.1:11434/api/generate`) using the `gemma2:9b` or `gemma2:2b` model.
-* **Constrained Zero-Hallucination Prompting:** Gemma 2 is strictly instructed to evaluate the deal within the bounds of the verified price median and seller listings. It evaluates:
-  1. *Deal Authenticity:* Is the strike-through MRP an artificial marketing trick?
-  2. *Resale & Arbitrage Potential:* Is there sufficient margin after subtracting an estimated 8% marketplace selling fee?
+The most relevant implementation files are:
 
-```typescript
-// Gemma 2 Prompt Structure in llmClient.ts
-const prompt = `You are HustleRadar's open-source deal auditor and retail arbitrage advisor powered by Google Gemma 2.
-Evaluate this product deal strictly using the verified market evidence below. Do NOT hallucinate prices or retailers.
+- [`evidenceService.ts`](https://github.com/DeepSaha25/HustleRadar/blob/main/apps/server/src/services/evidenceService.ts) — live/demo evidence collection, caching and provider status
+- [`llmClient.ts`](https://github.com/DeepSaha25/HustleRadar/blob/main/apps/server/src/services/llmClient.ts) — Gemma routing and deterministic fallback
+- [`validation.ts`](https://github.com/DeepSaha25/HustleRadar/blob/main/apps/server/src/services/validation.ts) — product identity, currency and listing guards
+- [`server.test.js`](https://github.com/DeepSaha25/HustleRadar/blob/main/apps/server/test/server.test.js) — offline regression tests
+- [`render.yaml`](https://github.com/DeepSaha25/HustleRadar/blob/main/render.yaml) — Render deployment blueprint
+
+### Evidence collection stays separate from the verdict
+
+The backend collects three evidence streams concurrently. The model does not replace this work:
+
+```ts
+const [shopping, retailers, context] = await Promise.all([
+  run("shopping", () => searchShoppingDetailed(query, signal, forceRefresh)),
+  run("retailers", () => searchMajorRetailersDetailed(query, signal, forceRefresh)),
+  run("context", () => searchContextDetailed(query, signal)),
+]);
+
+return {
+  query,
+  mode: "live",
+  shopping,
+  retailers,
+  context,
+};
+```
+
+Each batch retains its status. A successful empty search is still an observation; a provider error is not converted into a successful result.
+
+### Demo fixtures require an explicit mode
+
+The important safety boundary is small but deliberate:
+
+```ts
+if (mode === "demo") {
+  const evidence = fixture(query);
+  setEvidence(cacheKey, evidence);
+  return { evidence, fromCache: false };
+}
+
+const evidence = await collectLive(query, signal, progress, forceRefresh);
+```
+
+This prevents a failed live search from being “helpfully” filled with demo data. It also makes cached evidence mode-specific, so a demo report cannot leak into a live request.
+
+### Gemma receives facts, not a blank prompt
+
+The prompt sent to Gemma contains the normalized product, verdict, claimed price, reference price, market median, lowest comparable listing and calculated arbitrage result:
+
+```ts
+const prompt = `You are HustleRadar's open-source deal auditor and
+retail arbitrage advisor powered by Google Gemma 2.
+
+Evaluate this product deal strictly using the verified market evidence below.
+Do NOT hallucinate prices or retailers.
 
 Product: ${params.productTitle}
 Verdict: ${params.verdict} (Confidence: ${params.confidence})
-Claimed Price: ₹${params.claimedPrice}
-Reference/MRP: ₹${params.claimedOriginalPrice}
-Market Median Price: ₹${params.medianPrice}
-Lowest Listing: ${params.cheapestSeller.name} at ₹${params.cheapestSeller.price}
-Arbitrage Net Profit Potential: ₹${params.arbitrage.netProfit} (${params.arbitrage.marginPercent}% margin)
+Claimed Price: ${formatPrice(params.claimedPrice)}
+Market Median Price: ${formatPrice(params.medianPrice)}
+Lowest Listing: ${params.cheapestSeller?.name}
+Arbitrage Net Profit Potential: ${formatPrice(params.arbitrage?.netProfit)}
+`;
+```
 
-Provide a concise, 2-3 sentence verdict for side-hustlers and buyers:
-1. Is the advertised discount genuine or an inflated marketing trick?
-2. Is there viable retail arbitrage / resale margin after 8% marketplace fees?`;
+The model is asked to explain two decisions:
+
+1. Is the advertised discount genuine or inflated?
+2. Is there viable resale margin after the estimated marketplace fee?
+
+That is a much narrower and more auditable job than asking a chatbot to browse the internet and guess.
+
+### A model failure should not erase the arithmetic
+
+Gemma can be disabled with `ENABLE_LLM=false`. If Ollama or an optional open-model endpoint is unavailable, HustleRadar returns a deterministic rationale generated from the same structured evidence and calculations.
+
+The model can improve the explanation. It does not own the underlying prices, fee calculation or product-match decision.
+
+## How I Built It
+
+HustleRadar is built around a simple architectural rule:
+
+> **Use open-weight AI for synthesis, but make the source evidence and the important arithmetic inspectable without trusting the model.**
+
+### The stack
+
+| Layer | Technology | Responsibility |
+| --- | --- | --- |
+| Interface | React 18, TypeScript, Vite, Tailwind CSS | Product input, streamed progress and decision report |
+| API | Node.js, Express and TypeScript | Request validation, orchestration and report assembly |
+| Search grounding | SerpApi shopping and retailer search | Current offers, retailer evidence and dated context |
+| Product guardrails | Deterministic matching and INR parsing | Reject wrong models, accessories, refurbished items and non-INR prices |
+| Decision engine | Deterministic median, fee and scenario calculations | Compute the numbers before language generation |
+| Open model | Google Gemma 2 through Ollama or supported endpoints | Explain the evidence for a buyer or reseller |
+| Transport | NDJSON streaming | Show shopping, retailer and context progress as it happens |
+| Deployment | Render Blueprint | Serve the frontend and Node API from reproducible configuration |
+| Verification | Node test runner and production builds | Protect the important boundaries offline |
+
+### The architecture
+
+```text
+Browser
+  React + TypeScript + Vite
+      │
+      │ POST /api/check-deal/stream
+      ▼
+Node + Express API
+  ├─ query and URL validation
+  ├─ SerpApi shopping search
+  ├─ retailer-specific search
+  ├─ dated context search
+  ├─ product/variant/condition filters
+  ├─ median + fee + scenario calculator
+  ├─ Gemma 2 rationale (optional)
+  └─ deterministic rationale fallback
+      │
+      ▼
+Report
+  ├─ verdict and confidence
+  ├─ price comparison matrix
+  ├─ arbitrage margin
+  ├─ evidence receipts
+  └─ warnings and provider coverage
+```
+
+### 1. Ground the model with multiple search paths
+
+One search query is not enough for a resale decision. HustleRadar uses separate paths for:
+
+- **Shopping results** — structured offers and merchant prices.
+- **Major retailer searches** — direct retailer pages that an aggregator may miss.
+- **Context search** — dated mentions that help distinguish a current market price from a temporary marketing reference.
+
+The result is stored as evidence first. The application can then show the source, status and timestamp instead of reducing everything to an unsupported answer such as “great deal”.
+
+### 2. Normalize the product before calculating a margin
+
+The hardest part of price comparison is often not arithmetic. It is deciding whether two listings describe the same thing.
+
+The validation layer rejects or flags:
+
+- the wrong model number, such as WH-1000XM4 for a WH-1000XM5 query;
+- accessories such as cases, cables and replacement ear pads;
+- refurbished or used listings when the requested product is new;
+- mismatched storage, RAM, size or colour variants when those attributes matter;
+- prices that are not valid Indian rupee values.
+
+This is why a cheap accessory cannot accidentally become the “lowest seller” for an expensive product.
+
+### 3. Calculate the decision before asking Gemma to write it
+
+The recommendation engine calculates the market median, the lowest matching seller and the fee-adjusted resale outlook first. This creates a stable baseline that can be checked in tests and displayed in the UI.
+
+The language model then answers a smaller question: **how should these verified facts be explained to a person deciding whether to buy?**
+
+That separation is the product's main design choice. It gives a small open model a useful job without making it responsible for discovering or inventing the market.
+
+### 4. Keep the model replaceable
+
+The verified local model run used **`gemma2:9b` through Ollama** at `http://127.0.0.1:11434`. The code also supports configured open-model endpoints, while the deterministic path remains available when the model is disabled.
+
+![Local Gemma 2 demonstration with the evidence-backed HustleRadar analysis](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/08-local-gemma-demo.png)
+
+The model name, endpoint and enable/disable behavior come from environment variables rather than hard-coded credentials. Secrets stay in `.env` or deployment configuration and are not committed to the repository.
+
+### 5. Stream progress instead of showing a frozen spinner
+
+Search takes longer than a local calculation. The API emits NDJSON progress events while it checks shopping results, retailers, context and analysis. The frontend can show which evidence path is running, which one finished and where a provider returned an error.
+
+That small interaction detail matters for trust: the user can see that the report is being assembled rather than waiting for an opaque “AI answer”.
+
+---
+
+## The bugs and design decisions that mattered
+
+The most important work was not making the happy path look impressive. It was making the failure paths honest.
+
+### Bug 1: a provider failure silently looked like a successful scan
+
+An earlier implementation could fall back to demo fixtures when a live provider failed. That made the UI look complete, but it destroyed the meaning of “live”. A reseller could believe the report came from current market evidence when it did not.
+
+The fix was to make the mode part of the evidence contract:
+
+- live requests stay live;
+- provider errors remain errors;
+- demo fixtures load only after an explicit demo request;
+- partial failures are not cached as healthy full reports;
+- the UI can show `insufficient_data` instead of inventing confidence.
+
+This is also why the demo screenshots in this article are labelled rather than presented as live prices.
+
+### Bug 2: the cheapest listing was not always the right product
+
+Search engines return useful results mixed with noise. A product query can bring back a case, a replacement part, a previous model or a refurbished unit. Price aggregation without identity checks rewards the wrong listing.
+
+The validation layer now checks model identity, condition, accessory language, variant attributes and currency before a listing reaches the margin calculation.
+
+### Design decision: confidence should describe evidence, not model fluency
+
+A polished Gemma paragraph is not evidence. HustleRadar's confidence and warnings are based on source coverage and matching results. The model's role is to explain the report, not to upgrade weak evidence into a strong recommendation.
+
+### What HustleRadar does not promise
+
+- It does not guarantee that a reseller will sell an item at the market median.
+- It does not guarantee that a retailer has stock after the scan.
+- It does not treat a displayed MRP as historical truth.
+- It does not silently convert a provider outage into a demo result.
+- It does not claim that open-weight AI removes every cost: live search providers, hosting and marketplace fees still exist.
+
+Those limits are part of the product. A useful side-hustle tool should help someone avoid a bad purchase, not create a new kind of overconfidence.
+
+## Why Does Open Innovation Matter?
+
+The Week 2 prompt asks what an open-based approach made possible that a closed API would not. For HustleRadar, the answer is not simply “the model was free”. It changed the boundaries of the product.
+
+### 1. Local, private deal analysis
+
+A reseller's watchlist can reveal the products, suppliers and niches they are trying to find. With Ollama, the structured report can be sent to a local Gemma model instead of a hosted general-purpose model.
+
+The local path keeps the analysis on the user's machine and makes the privacy trade-off explicit. The live market search is still an external dependency when enabled, but the language-generation step does not have to leave the laptop.
+
+### 2. Lower marginal cost for a small business
+
+The intended user is not an enterprise with an AI budget. They may be checking a handful of products after work or auditing inventory before committing personal savings.
+
+Running `gemma2:9b` locally has no per-token model charge. That does **not** make the whole stack free — SerpApi, hosting and resale fees still matter — but it removes one recurring cost and makes experimentation practical for a small operator.
+
+### 3. Model choice without rewriting the product
+
+The application owns the prompt contract and the evidence schema. It can use local Ollama, a configured open-model endpoint or the deterministic rationale path without changing the report UI.
+
+That makes the model replaceable. A user can trade speed, memory, privacy and quality without giving up the product workflow or their stored reasoning about fees and evidence.
+
+### 4. Inspectable behavior at the boundary where it matters
+
+Closed APIs often make it difficult to reproduce exactly why a recommendation changed. Here, the key boundary is in the repository:
+
+```text
+search → normalize → calculate → explain
+```
+
+The first three stages are visible and testable. The open model receives a constrained input and can be disabled. That is a more useful form of AI safety for this product than claiming that a prompt makes a model incapable of error.
+
+### 5. A path to niche improvements
+
+An open model can eventually be adapted to the language of a particular resale community, a regional marketplace or a user's own historical sales data. The product can improve its prompts, filters and model choice without waiting for a closed provider to expose the right control.
+
+Open innovation made it possible to build a tool where the model is powerful enough to help, but not powerful enough to hide the evidence from the person risking their money.
+
+---
+
+## Verification and deployment
+
+The repository includes an offline test command:
+
+```bash
+npm test
+```
+
+The current suite has **24 passing tests** covering:
+
+- query sanitization and INR-only price parsing;
+- accessory, refurbished and wrong-model rejection;
+- explicit demo mode and cache separation;
+- honest live provider failure;
+- streamed NDJSON progress and results;
+- deterministic rationale when Gemma is disabled;
+- rejection of ambiguous short product URLs.
+
+![HustleRadar test suite showing 24 passing tests](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev%20ss/09-tests-passing.png)
+
+The production build also completes for the Node API and React frontend. Render is configured through [`render.yaml`](https://github.com/DeepSaha25/HustleRadar/blob/main/render.yaml), which defines the web frontend and Node API services, their build commands, the API connection and the production environment variables.
+
+The deployed health check is available at:
+
+```text
+https://hustleradar.onrender.com/api/health
 ```
 
 ---
 
-## 🌐 Why Does Open Innovation Matter?
+## Who would pay for this?
 
-This challenge asks: *"What did open innovation make possible that a closed API wouldn't?"*
+HustleRadar is intentionally aimed at a narrow, money-sensitive workflow.
 
-1. **Zero Marginal Token Cost for Side Hustlers:**  
-   A reseller researching inventory during festive flash sales might evaluate 200–500 SKUs a week. Closed APIs (like GPT-4o) charge per token, racking up $20–$50/month in API costs alone. Running open-weight **Gemma 2** locally via Ollama costs **$0.00**. It enables a side hustle to stay profitable from day one.
-2. **Proprietary Sourcing Privacy:**  
-   In retail arbitrage, your sourcing watchlist is your competitive moat. If a reseller routes their search targets through closed third-party cloud APIs, they run the risk of having their high-margin product discoveries logged or analyzed. With a local open-weight model, all analysis remains confidential on their laptop.
-3. **No Vendor Lock-In or Sudden Price Hikes:**  
-   Closed AI providers regularly deprecate models or introduce usage limits. Open-weight models like Gemma 2 belong to the community: you can run them on your laptop, quantize them, fine-tune them on your own past sales data, or host them on your own GPU.
+### Retail arbitrage beginners
 
----
+Someone who buys a ₹15,000–₹50,000 product to resell cannot treat a “40% off” badge as a business case. A small fee or a lower competing listing can erase the profit before the product even ships.
 
-## 👤 My First User
+### Electronics flippers
 
-Before submitting, I put HustleRadar in front of **Rohan**, a freelance video editor and part-time electronics flipper based in Bengaluru.
+Headphones, phones, cameras, laptops and accessories have frequent model and condition mismatches. A like-for-like comparison is more useful than a generic shopping search.
 
-* **His Workflow:** Rohan regularly scours festive clearance sales for camera lenses, studio monitors, and MacBooks, flipping them locally on OLX and tech forums.
-* **The Test:** During the recent festive sale, an e-commerce platform advertised a popular telephoto lens marked down from *"₹74,999 to ₹48,500 (35% OFF!)"*.
-* **What HustleRadar Found:**  
-  HustleRadar scanned five competitor stores in 4 seconds. It revealed that:
-  - The market median price was **₹49,200**.
-  - Another retailer was selling it for **₹47,999** every day.
-  - The "74,999 MRP" was artificially inflated before the sale.
-  - Net Arbitrage after 8% fees was **-₹3,800** (a loss!).
-* **User Feedback:**
-  > *"If I had bought that lens thinking I had ₹25,000 of discount room, I would have lost my capital. The instant fee calculator and multi-store breakdown saved me from a bad ₹48,000 purchase. I'd definitely use this whenever I source gear."*
+### Freelance studios and independent professionals
+
+The user may not resell every purchase, but they still need to know whether a camera, monitor, laptop or audio device is priced fairly before spending a project budget.
+
+### Small e-commerce operators
+
+The scenario calculator helps model a real buying decision instead of forcing the user to do fee and discount arithmetic in a spreadsheet after the fact.
+
+This is the kind of product I would expect a serious user to pay for if it consistently prevented even one bad inventory purchase. I am keeping the claim honest: the current article does not invent a paying customer or a testimonial that has not been verified.
+
+If you buy or flip electronics, I would like to know which fee, marketplace or product variant the current version gets wrong first.
 
 ---
 
-## 🏆 Prize Categories
+## Prize Categories
 
-I am submitting HustleRadar for the following partner categories:
+I am entering only categories that the repository and deployed application can substantiate:
 
-1. **Theme: Side Hustle (Grand Prize)** — Built specifically to solve the core inventory and margin problem for retail flippers and freelance procurement.
-2. **Best Use of Gemma ($200)** — Uses Google Gemma 2 (9B / 2B open-weights) via local Ollama and open inference as the Deal Auditor & Arbitrage Advisor.
-3. **Best Use of SerpApi ($100)** — Grounded entirely in real-time, tamper-proof market pricing using SerpApi's `google_shopping` and retailer search engines.
-4. **Best Use of Render ($200)** — Configured with a root `render.yaml` blueprint for one-click deployment of the full-stack architecture.
-5. **Best Use of a .tech Domain ($100)** — Configured for deployment at `hustleradar.tech`.
+### 🏆 Theme: Side Hustle
+
+HustleRadar is built around a concrete side-hustle decision: **should I buy this item if I want a realistic resale margin?** It targets a small, specific user group and turns market research, product matching and fee arithmetic into a repeatable workflow.
+
+### 🤖 Best Use of Gemma
+
+HustleRadar uses Google's open-weight **Gemma 2** as the deal auditor and resale advisor. The verified local path runs `gemma2:9b` through Ollama. The model receives structured, normalized market evidence and explains deal authenticity and fee-adjusted resale potential. It can be disabled, replaced or run locally without changing the deterministic report engine.
+
+### 🔎 Best Use of SerpApi
+
+SerpApi provides the fresh market grounding: shopping results, direct retailer searches and dated context. The application preserves provider status and source links, filters the results before calculation and exposes coverage warnings instead of presenting unsupported numbers as facts.
+
+### 🚀 Best Use of Render
+
+The live application is deployed at [hustleradar.onrender.com](https://hustleradar.onrender.com/). The repository includes a Render Blueprint that builds the React frontend and Node API from the same project, with production configuration kept outside the repository.
+
+I am not claiming a `.tech`, DigitalOcean, ElevenLabs, Tinker, Backboard, Sentry or other partner category because this project does not have verified use of those services.
 
 ---
 
-*Built with ❤️ for open-source AI and side hustlers everywhere during Hacktoberfest 2026!*
+## Final note
+
+A good deal is not a crossed-out price.
+
+It is a price with:
+
+- a matching product;
+- more than one source;
+- a realistic exit price;
+- fees already subtracted;
+- evidence a buyer can inspect; and
+- enough uncertainty shown honestly to make a better decision.
+
+That is what I wanted HustleRadar to make possible: **an open-source AI side-hustle tool that helps people keep their margin before they commit their money.**
+
+If you try it, tell me what you would add next: a marketplace fee, a regional retailer, a better variant rule or a different open model.
+
+Built for the [Hacktoberfest Open-Source AI Challenge Week 2](https://dev.to/challenges/hacktoberfest-week2-2026-10-12).
