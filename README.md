@@ -165,7 +165,7 @@ package-lock.json      Root dependency lockfile
 
 ## Requirements
 
-- Node.js 20 LTS or newer supported by the project toolchain.
+- Node.js 20 LTS, pinned by `.nvmrc`.
 - npm 10 or newer.
 - A SerpApi account and API key for live market scans.
 - Ollama with `gemma2:9b` or another configured Gemma-compatible endpoint for local model explanations. LLM access is optional; deterministic rationale works without it.
@@ -244,8 +244,10 @@ The frontend is written to `apps/web/dist` and the API is compiled to `apps/serv
 Run the single project test command:
 
 ```bash
-npm test
+make test
 ```
+
+The equivalent npm command is `npm test`.
 
 The command builds the server and runs the offline Node test suite. It covers:
 
@@ -262,6 +264,19 @@ The command builds the server and runs the offline Node test suite. It covers:
 - product URL resolution boundaries.
 
 The test suite does not claim to prove a live provider quota or a remote Gemma generation. Provider calls are mocked or disabled so the checks remain offline and repeatable.
+
+## Container build
+
+The multi-stage `Dockerfile` installs the locked workspace dependencies, builds both applications and runs the compiled API. The API also serves the built frontend when the frontend distribution is present in the image.
+
+```bash
+docker build -t hustleradar .
+docker run --rm -p 8080:8080 \
+  --env-file .env \
+  hustleradar
+```
+
+Open `http://localhost:8080` after the container starts. Live searches require `SERPAPI_KEY`; Gemma is optional and can be disabled with `ENABLE_LLM=false`.
 
 ## Render deployment
 
