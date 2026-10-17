@@ -1,9 +1,3 @@
-*This is a submission for the [Hacktoberfest Open-Source AI Challenge Week 2: Side Hustle](https://dev.to/challenges/hacktoberfest-week2-2026-10-12).*
-
-**DEV.to tags:** `#devchallenge` `#hf26challenge` `#ai` `#sidehustle`
-
-> **The challenge:** build something with open-source AI at its core that someone would actually pay for. Think small, specific and useful — then explain what open innovation made possible that a closed API would not.
-
 ## A ₹7,000 discount can still be a bad deal
 
 I built **HustleRadar** because a crossed-out price is not the same thing as a profitable resale opportunity.
@@ -22,7 +16,7 @@ These are the failure modes the product is designed to catch before someone spen
 
 ![HustleRadar problem-card carousel showing six ways flippers lose money](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@8d4ffbe/dev-ss/00-problem-card.png)
 
-**What this screenshot shows:** the landing-page problem carousel titled **“Six ways flippers lose money.”** The selected card highlights an inflated “Sale” buy price, while the surrounding cards point to missing AI price insight, fees that erase the margin and the risk that a cheaper source exists. It frames the product problem before the evidence-backed comparison begins.
+The landing-page carousel introduces **“Six ways flippers lose money.”** Its selected card highlights an inflated “Sale” buy price, while the surrounding cards point to missing price insight, fees that erase the margin and the possibility that a cheaper source exists. It frames the product problem before the evidence-backed comparison begins.
 
 HustleRadar turns those questions into one evidence-backed workflow: **enter a product and an offer price, compare the market, calculate the exit margin, then ask an open-weight model to explain the result.**
 
@@ -72,7 +66,7 @@ The landing page is intentionally small and action-oriented. A reseller can past
 
 ![HustleRadar landing page with the Find The Flip hero and Find a Flip action](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev-ss/01-landing-page.png)
 
-**What this screenshot shows:** the actual HustleRadar landing page with the **Find The Flip Before Anyone Else** hero, the navigation bar, the **Find Flip** action, the promise of live SerpApi retailer scans and Gemma 2 analysis, and the “instant · 100% free · no extension needed” message. It is the product entry point; it is not itself a deal verdict.
+The landing page presents the **Find The Flip Before Anyone Else** hero, the primary **Find Flip** action, and the product promise: live SerpApi retailer scans, Gemma 2 analysis and no browser extension requirement. This is the product entry point, not a deal verdict.
 
 The interface also makes the boundary visible: **live data, multiple retailers, Gemma 2 AI and local inference availability** are capabilities of the system, not a guarantee that every provider will always respond.
 
@@ -664,7 +658,7 @@ HustleRadar is built around a concrete side-hustle decision: **should I buy this
 
 ![HustleRadar side-hustle report showing the deal verdict, market prices and resale margin](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/10-final-report.png)
 
-**What this screenshot shows:** the complete buyer decision screen: the verdict at the top, the matching retailer count, the cheapest source, the market median, the user's offer price and the fee-adjusted resale margin. This is the side-hustle outcome the product is designed to support: decide whether inventory is worth buying before committing cash.
+The complete buyer decision screen brings together the verdict, matching-retailer count, cheapest source, market median, offer price and fee-adjusted resale margin. This is the side-hustle outcome the product is designed to support: deciding whether inventory is worth buying before committing cash.
 
 ### 🤖 Best Use of Gemma
 
@@ -682,11 +676,11 @@ Gemma is not asked to discover prices or invent retailer names. It is instructed
 
 ![HustleRadar result view with the Gemma 2 analysis card](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/08-local-gemma-demo.png)
 
-**Screenshot 1 — the full result view:** the report shows the product verdict, the number of matching retailers and the `AI ANALYSIS · GEMMA 2` card. The explanation is attached to the calculated result rather than presented as a free-form chatbot answer.
+The full result view combines the product verdict, matching-retailer count and the `AI ANALYSIS · GEMMA 2` card. The explanation is attached to the calculated result rather than presented as a free-form chatbot answer.
 
 ![Gemma 2 analysis panel showing the evidence-backed HustleRadar rationale](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/11-gemma-analysis.png)
 
-**Screenshot 2 — the close-up analysis panel:** Gemma explains that the ₹15,000 sourcing price is below the ₹22,990 market median and reports the estimated ₹6,151 net margin after the modelled 8% fee. The screenshot demonstrates the model's role: explain retained evidence and arithmetic. It is not evidence that Gemma discovered those prices, and it is not a claim that the displayed demo values are live today.
+The close-up analysis panel shows Gemma explaining that the ₹15,000 sourcing price is below the ₹22,990 market median and reporting the estimated ₹6,151 net margin after the modelled 8% fee. The model's role is to explain retained evidence and arithmetic, not to discover prices or replace the underlying calculations.
 
 Evidence in the repository:
 
@@ -706,11 +700,11 @@ The evidence service starts these paths with `Promise.all`. Each path returns a 
 
 ![HustleRadar prices-by-store view showing comparable retailer evidence](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/02-prices-by-store.png)
 
-**What this screenshot shows:** the retailer comparison produced from the search evidence: the same product configuration is compared across stores, with each price kept next to its source rather than collapsed into an unexplained number.
+The retailer comparison preserves the same product configuration across stores and keeps every price next to its source rather than collapsing the market into an unexplained number.
 
 ![HustleRadar evidence coverage view showing source status and market evidence](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/04-evidence-coverage.png)
 
-**What this screenshot shows:** the evidence-coverage state behind the result, including which search paths returned usable observations and where coverage is incomplete. This is why the SerpApi integration is treated as a provider whose results must be validated, not as unquestioned truth.
+The evidence-coverage view records which search paths returned usable observations and where coverage is incomplete. This makes the SerpApi integration auditable: provider results are validated before they influence the recommendation.
 
 The integration is more than a search-box call:
 
@@ -750,7 +744,7 @@ The frontend service builds `apps/web` and publishes `apps/web/dist`. Its catch-
 
 ![HustleRadar Render health endpoint showing service and provider configuration](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/07-render-health.png)
 
-**What this screenshot shows:** the deployed `/api/health` response with service status, SerpApi/provider state, optional LLM configuration, the analysis version and a timestamp. It verifies the deployed application's health/configuration boundary; it does not claim that a live SerpApi request or a Gemma generation succeeded at that exact moment.
+The deployed `/api/health` response exposes service status, SerpApi/provider state, optional LLM configuration, the analysis version and a timestamp. It provides a machine-readable deployment and configuration check without exposing credentials or provider payloads.
 
 The Render-specific implementation is visible and reviewable:
 
