@@ -12,8 +12,6 @@ DEV Markdown editor. This comment is invisible in the published article.
 
 > **The challenge:** build something with open-source AI at its core that someone would actually pay for. Think small, specific and useful — then explain what open innovation made possible that a closed API would not.
 
-# A ₹7,000 discount can still be a bad deal
-
 I built **HustleRadar** because a crossed-out price is not the same thing as a profitable resale opportunity.
 
 ₹15,000 against a displayed reference price of ₹22,000 looks like an instant ₹7,000 saving. But a reseller still has to answer harder questions:
