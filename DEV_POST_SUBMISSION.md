@@ -56,21 +56,23 @@ The product then runs a complete decision loop:
 5. **Use Google Gemma 2** to turn those structured facts into a short, practical explanation for a buyer or side hustler.
 6. **Fall back safely** to a deterministic evidence-backed rationale if the model is disabled or unavailable.
 
-### Start with a product, not a conversation
+### 1. Landing page: start with a product, not a conversation
 
-The input screen is intentionally small. A reseller should be able to paste a product, type the real buy price and start the check without writing a prompt.
+The landing page is intentionally small and action-oriented. A reseller can paste a product name or product link, enter the real buy price, optionally enter the displayed/reference price and start the check without writing a prompt.
 
 ![HustleRadar landing page with Sony WH-1000XM5, a ₹15,000 offer price and a ₹22,000 reference price](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/01-landing-page.png)
 
+**What this screenshot shows:** the HustleRadar landing page, the product field containing **Sony WH-1000XM5**, the actual offer price of **₹15,000**, the optional reference price of **₹22,000**, and the **Calculate flip margin** action. It is the starting point for the evidence workflow; it is not itself a deal verdict.
+
 The interface also makes the boundary visible: **live data, multiple retailers, Gemma 2 AI and local inference availability** are capabilities of the system, not a guarantee that every provider will always respond.
 
-### Compare the market instead of trusting the banner
+### 2. Compare the market instead of trusting the banner
 
 HustleRadar compares the product across multiple stores and keeps the source attached to each number. The point is not to produce the biggest discount percentage; it is to find the price floor and the price range a real buyer may encounter.
 
 ![HustleRadar price comparison view showing prices by store](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/02-prices-by-store.png)
 
-### Make the resale calculation explicit
+### 3. Make the resale calculation explicit
 
 The report separates the numbers that are usually mixed together on a product page:
 
@@ -92,7 +94,7 @@ Delivery, coupons and bank discounts can be modelled in the scenario calculator 
 
 ![HustleRadar scenario calculator for bank discounts, delivery fees and coupons](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/05-scenario-calculator.png)
 
-### Show why the recommendation exists
+### 4. Show why the recommendation exists
 
 The most important part of an AI recommendation is not the adjective “good” or “bad”. It is whether a person can inspect the path from source evidence to conclusion.
 
@@ -102,7 +104,7 @@ The evidence view exposes the coverage and provenance behind the report:
 
 That makes the app useful even when the answer is **“insufficient data”**. A missing market observation is safer than a confident-looking number invented to complete the card.
 
-### Protect the comparison from near matches
+### 5. Protect the comparison from near matches
 
 “Sony WH-1000XM5” should not be compared with WH-1000XM4, replacement ear pads, a protective case or a refurbished unit. HustleRadar applies product and condition checks before prices enter the calculation.
 
@@ -128,8 +130,6 @@ The screenshots in this article use the stable demo scenario where indicated. Th
 If a live provider fails, the report remains `live`, has no fabricated demo sellers, and can return `insufficient_data`. Demo fixtures are only loaded when the caller explicitly requests `mode: "demo"`.
 
 The backend supports both modes, while the current investigator flow submits live scans by default. The landing page's demo visuals and the offline tests use clearly labelled fixtures; the live search screen never silently changes a failed provider response into demo evidence.
-
-![Gemma 2 analysis panel showing the evidence-backed HustleRadar rationale](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/11-gemma-analysis.png)
 
 ![Render health endpoint and deployment verification for HustleRadar](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/07-render-health.png)
 
@@ -413,8 +413,6 @@ That separation is the product's main design choice. It gives a small open model
 
 The verified local model run used **`gemma2:9b` through Ollama** at `http://127.0.0.1:11434`. The code also supports configured open-model endpoints, while the deterministic path remains available when the model is disabled.
 
-![Local Gemma 2 demonstration with the evidence-backed HustleRadar analysis](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/08-local-gemma-demo.png)
-
 The model name, endpoint and enable/disable behavior come from environment variables rather than hard-coded credentials. Secrets stay in `.env` or deployment configuration and are not committed to the repository.
 
 ### 5. Stream progress instead of showing a frozen spinner
@@ -647,6 +645,10 @@ I am entering only categories that the repository and deployed application can s
 
 HustleRadar is built around a concrete side-hustle decision: **should I buy this item if I want a realistic resale margin?** It targets a small, specific user group and turns market research, product matching and fee arithmetic into a repeatable workflow.
 
+![HustleRadar side-hustle report showing the deal verdict, market prices and resale margin](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/10-final-report.png)
+
+**What this screenshot shows:** the complete buyer decision screen: the verdict at the top, the matching retailer count, the cheapest source, the market median, the user's offer price and the fee-adjusted resale margin. This is the side-hustle outcome the product is designed to support: decide whether inventory is worth buying before committing cash.
+
 ### 🤖 Best Use of Gemma
 
 HustleRadar uses Google's open-weight **Gemma 2** as a bounded deal auditor and resale advisor. The verified local path runs `gemma2:9b` through Ollama at `http://127.0.0.1:11434`. Gemma receives a structured prompt containing the normalized product, deterministic verdict, confidence, claimed price, market median, lowest comparable listing and fee-adjusted arbitrage result.
@@ -659,6 +661,16 @@ SerpApi evidence → product guards → deterministic verdict/margin → Gemma e
 
 Gemma is not asked to discover prices or invent retailer names. It is instructed to stay inside the retained evidence. `ENABLE_LLM=false` bypasses the model, and the deterministic rationale remains available if Ollama or another configured open-model endpoint is unavailable. That makes the open model useful without making it the single point of correctness.
 
+#### What the Gemma screenshots show
+
+![HustleRadar result view with the Gemma 2 analysis card](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/08-local-gemma-demo.png)
+
+**Screenshot 1 — the full result view:** the report shows the product verdict, the number of matching retailers and the `AI ANALYSIS · GEMMA 2` card. The explanation is attached to the calculated result rather than presented as a free-form chatbot answer.
+
+![Gemma 2 analysis panel showing the evidence-backed HustleRadar rationale](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/11-gemma-analysis.png)
+
+**Screenshot 2 — the close-up analysis panel:** Gemma explains that the ₹15,000 sourcing price is below the ₹22,990 market median and reports the estimated ₹6,151 net margin after the modelled 8% fee. The screenshot demonstrates the model's role: explain retained evidence and arithmetic. It is not evidence that Gemma discovered those prices, and it is not a claim that the displayed demo values are live today.
+
 Evidence in the repository:
 
 - `apps/server/src/services/llmClient.ts` — Gemma prompt, Ollama routing, optional provider paths and deterministic fallback;
@@ -668,6 +680,14 @@ Evidence in the repository:
 ### 🔎 Best Use of SerpApi
 
 SerpApi is the fresh-market grounding layer. HustleRadar uses three search paths: `google_shopping` for offers, retailer-restricted Google searches for store coverage and dated Google context for price mentions. They run concurrently, preserve provider status and feed a validation layer before any number reaches the median or margin calculation.
+
+![HustleRadar prices-by-store view showing comparable retailer evidence](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/02-prices-by-store.png)
+
+**What this screenshot shows:** the retailer comparison produced from the search evidence: the same product configuration is compared across stores, with each price kept next to its source rather than collapsed into an unexplained number.
+
+![HustleRadar evidence coverage view showing source status and market evidence](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/04-evidence-coverage.png)
+
+**What this screenshot shows:** the evidence-coverage state behind the result, including which search paths returned usable observations and where coverage is incomplete. This is why the SerpApi integration is treated as a provider whose results must be validated, not as unquestioned truth.
 
 The integration is more than a search-box call:
 
@@ -688,6 +708,10 @@ Relevant implementation:
 ### 🚀 Best Use of Render
 
 The live application is deployed at [hustleradar.onrender.com](https://hustleradar.onrender.com/). The repository includes a Render Blueprint with two services: a static Vite/React frontend and a Node/Express API. The frontend gets the API host from a Render service reference, while `SERPAPI_KEY` and `GEMMA_API_KEY` are marked `sync: false` and stay in deployment configuration.
+
+![HustleRadar Render health endpoint showing service and provider configuration](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/07-render-health.png)
+
+**What this screenshot shows:** the deployed `/api/health` response with service status, SerpApi/provider state, optional LLM configuration, the analysis version and a timestamp. It verifies the deployed application's health/configuration boundary; it does not claim that a live SerpApi request or a Gemma generation succeeded at that exact moment.
 
 The Render-specific implementation is visible and reviewable:
 
