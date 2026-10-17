@@ -60,9 +60,9 @@ The product then runs a complete decision loop:
 
 The landing page is intentionally small and action-oriented. A reseller can paste a product name or product link, enter the real buy price, optionally enter the displayed/reference price and start the check without writing a prompt.
 
-![HustleRadar landing page with Sony WH-1000XM5, a ₹15,000 offer price and a ₹22,000 reference price](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/01-landing-page.png)
+![HustleRadar landing page with the Find The Flip hero and Find a Flip action](https://raw.githubusercontent.com/DeepSaha25/HustleRadar/main/dev-ss/01-landing-page.png)
 
-**What this screenshot shows:** the HustleRadar landing page, the product field containing **Sony WH-1000XM5**, the actual offer price of **₹15,000**, the optional reference price of **₹22,000**, and the **Calculate flip margin** action. It is the starting point for the evidence workflow; it is not itself a deal verdict.
+**What this screenshot shows:** the actual HustleRadar landing page with the **Find The Flip Before Anyone Else** hero, the navigation bar, the **Find Flip** action, the promise of live SerpApi retailer scans and Gemma 2 analysis, and the “instant · 100% free · no extension needed” message. It is the product entry point; it is not itself a deal verdict.
 
 The interface also makes the boundary visible: **live data, multiple retailers, Gemma 2 AI and local inference availability** are capabilities of the system, not a guarantee that every provider will always respond.
 
