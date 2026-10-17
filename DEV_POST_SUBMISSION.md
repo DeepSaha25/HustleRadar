@@ -108,11 +108,11 @@ That makes the app useful even when the answer is **“insufficient data”**. A
 
 ### 5. Protect the comparison from near matches
 
-“Sony WH-1000XM5” should not be compared with WH-1000XM4, replacement ear pads, a protective case or a refurbished unit. HustleRadar applies product and condition checks before prices enter the calculation.
+“MacBook M5” should not be compared with a MacBook M4, a MacBook Pro, the wrong screen size, a different memory/storage configuration or an accessory. HustleRadar applies product, variant and condition checks before prices enter the calculation.
 
 ![HustleRadar variant selection screen for narrowing the exact product match](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/06-variant-selection.png)
 
-This is a small detail with a large effect: a ₹999 accessory can make an apparently excellent margin if it is allowed into a ₹25,000 headphone comparison.
+This is a small detail with a large effect: a cheaper 13-inch or lower-storage configuration can make an apparently excellent margin if it is allowed into a 15-inch or higher-storage MacBook comparison.
 
 ---
 
@@ -395,7 +395,7 @@ The hardest part of price comparison is often not arithmetic. It is deciding whe
 
 The validation layer rejects or flags:
 
-- the wrong model number, such as WH-1000XM4 for a WH-1000XM5 query;
+- the wrong model or generation, such as a MacBook M4 or MacBook Pro result for a MacBook Air M5 query;
 - accessories such as cases, cables and replacement ear pads;
 - refurbished or used listings when the requested product is new;
 - mismatched storage, RAM, size or colour variants when those attributes matter;
