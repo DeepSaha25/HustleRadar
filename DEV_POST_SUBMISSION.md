@@ -16,6 +16,14 @@ I built **HustleRadar** because a crossed-out price is not the same thing as a p
 - What remains after marketplace fees, delivery, coupons and other costs?
 - Is this a real opportunity, or just a convincing product page?
 
+### The problem in one screen
+
+These are the failure modes the product is designed to catch before someone spends money on inventory:
+
+![HustleRadar problem-card carousel showing six ways flippers lose money](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@8d4ffbe/dev-ss/00-problem-card.png)
+
+**What this screenshot shows:** the landing-page problem carousel titled **“Six ways flippers lose money.”** The selected card highlights an inflated “Sale” buy price, while the surrounding cards point to missing AI price insight, fees that erase the margin and the risk that a cheaper source exists. It frames the product problem before the evidence-backed comparison begins.
+
 HustleRadar turns those questions into one evidence-backed workflow: **enter a product and an offer price, compare the market, calculate the exit margin, then ask an open-weight model to explain the result.**
 
 ![HustleRadar report showing a deal verdict, retailer prices, market median and resale margin](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/10-final-report.png)
