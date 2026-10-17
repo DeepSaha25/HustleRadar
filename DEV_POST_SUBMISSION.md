@@ -16,7 +16,7 @@ I built **HustleRadar** because a crossed-out price is not the same thing as a p
 
 HustleRadar turns those questions into one evidence-backed workflow: **enter a product and an offer price, compare the market, calculate the exit margin, then ask an open-weight model to explain the result.**
 
-![HustleRadar report showing a deal verdict, retailer prices, market median and resale margin](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/10-final-report.png)
+![HustleRadar report showing a deal verdict, retailer prices, market median and resale margin](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/10-final-report.png)
 
 *The report above is a labelled, reproducible demo scenario. It is included to show the product flow; it is not presented as a claim that those particular prices are live today.*
 
@@ -60,7 +60,7 @@ The product then runs a complete decision loop:
 
 The input screen is intentionally small. A reseller should be able to paste a product, type the real buy price and start the check without writing a prompt.
 
-![HustleRadar landing page with Sony WH-1000XM5, a ₹15,000 offer price and a ₹22,000 reference price](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@main/dev-ss/01-landing-page.png)
+![HustleRadar landing page with Sony WH-1000XM5, a ₹15,000 offer price and a ₹22,000 reference price](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/01-landing-page.png)
 
 The interface also makes the boundary visible: **live data, multiple retailers, Gemma 2 AI and local inference availability** are capabilities of the system, not a guarantee that every provider will always respond.
 
@@ -68,7 +68,7 @@ The interface also makes the boundary visible: **live data, multiple retailers, 
 
 HustleRadar compares the product across multiple stores and keeps the source attached to each number. The point is not to produce the biggest discount percentage; it is to find the price floor and the price range a real buyer may encounter.
 
-![HustleRadar price comparison view showing prices by store](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/02-prices-by-store.png)
+![HustleRadar price comparison view showing prices by store](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/02-prices-by-store.png)
 
 ### Make the resale calculation explicit
 
@@ -80,7 +80,7 @@ The report separates the numbers that are usually mixed together on a product pa
 - estimated resale fee — currently modelled as an 8% marketplace fee
 - net resale margin — what remains after the fee and sourcing cost
 
-![HustleRadar arbitrage report showing resale margin and flip feasibility](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/03-resale-arbitrage-margin.png)
+![HustleRadar arbitrage report showing resale margin and flip feasibility](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/03-resale-arbitrage-margin.png)
 
 The simplified calculation is:
 
@@ -90,7 +90,7 @@ estimated net profit = expected resale price × (1 − marketplace fee) − sour
 
 Delivery, coupons and bank discounts can be modelled in the scenario calculator rather than hidden inside a single optimistic percentage.
 
-![HustleRadar scenario calculator for bank discounts, delivery fees and coupons](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/05-scenario-calculator.png)
+![HustleRadar scenario calculator for bank discounts, delivery fees and coupons](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/05-scenario-calculator.png)
 
 ### Show why the recommendation exists
 
@@ -98,7 +98,7 @@ The most important part of an AI recommendation is not the adjective “good” 
 
 The evidence view exposes the coverage and provenance behind the report:
 
-![HustleRadar evidence coverage view showing source status and market evidence](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/04-evidence-coverage.png)
+![HustleRadar evidence coverage view showing source status and market evidence](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/04-evidence-coverage.png)
 
 That makes the app useful even when the answer is **“insufficient data”**. A missing market observation is safer than a confident-looking number invented to complete the card.
 
@@ -106,7 +106,7 @@ That makes the app useful even when the answer is **“insufficient data”**. A
 
 “Sony WH-1000XM5” should not be compared with WH-1000XM4, replacement ear pads, a protective case or a refurbished unit. HustleRadar applies product and condition checks before prices enter the calculation.
 
-![HustleRadar variant selection screen for narrowing the exact product match](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/06-variant-selection.png)
+![HustleRadar variant selection screen for narrowing the exact product match](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/06-variant-selection.png)
 
 This is a small detail with a large effect: a ₹999 accessory can make an apparently excellent margin if it is allowed into a ₹25,000 headphone comparison.
 
@@ -129,9 +129,9 @@ If a live provider fails, the report remains `live`, has no fabricated demo sell
 
 The backend supports both modes, while the current investigator flow submits live scans by default. The landing page's demo visuals and the offline tests use clearly labelled fixtures; the live search screen never silently changes a failed provider response into demo evidence.
 
-![Gemma 2 analysis panel showing the evidence-backed HustleRadar rationale](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@main/dev-ss/11-gemma-analysis.png)
+![Gemma 2 analysis panel showing the evidence-backed HustleRadar rationale](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/11-gemma-analysis.png)
 
-![Render health endpoint and deployment verification for HustleRadar](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/07-render-health.png)
+![Render health endpoint and deployment verification for HustleRadar](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/07-render-health.png)
 
 ---
 
@@ -413,7 +413,7 @@ That separation is the product's main design choice. It gives a small open model
 
 The verified local model run used **`gemma2:9b` through Ollama** at `http://127.0.0.1:11434`. The code also supports configured open-model endpoints, while the deterministic path remains available when the model is disabled.
 
-![Local Gemma 2 demonstration with the evidence-backed HustleRadar analysis](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/08-local-gemma-demo.png)
+![Local Gemma 2 demonstration with the evidence-backed HustleRadar analysis](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/08-local-gemma-demo.png)
 
 The model name, endpoint and enable/disable behavior come from environment variables rather than hard-coded credentials. Secrets stay in `.env` or deployment configuration and are not committed to the repository.
 
@@ -599,7 +599,7 @@ The current suite has **24 passing tests** covering:
 
 The suite is designed to be honest about what it proves. SerpApi calls are mocked or disabled, and Gemma is disabled in the offline server tests. That means the tests verify the application’s adapters, validation rules, fallback behavior and streaming contract; they do not pretend to prove a live provider quota or a remote model endpoint.
 
-![HustleRadar test suite showing 24 passing tests](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/09-tests-passing.png)
+![HustleRadar test suite showing 24 passing tests](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@af57896/dev-ss/09-tests-passing.png)
 
 The production build also completes for the Node API and React frontend. The build currently emits only non-blocking Vite warnings about future config-loader behavior and bundle size. Render is configured through [`render.yaml`](https://github.com/DeepSaha25/HustleRadar/blob/main/render.yaml), which defines the web frontend and Node API services, their build commands, the API connection and the production environment variables.
 
