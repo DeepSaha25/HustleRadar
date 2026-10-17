@@ -1,13 +1,3 @@
-<!--
-DEV POST SETTINGS
-
-Title: A ₹7,000 discount can still be a bad deal — I built HustleRadar to audit the flip before you buy
-Tags: devchallenge, hf26challenge, gemma, opensource
-
-Set the title and tags in DEV's fields, then copy this entire file into the
-DEV Markdown editor. This comment is invisible in the published article.
--->
-
 *This is a submission for the [Hacktoberfest Open-Source AI Challenge Week 2: Side Hustle](https://dev.to/challenges/hacktoberfest-week2-2026-10-12).*
 
 > **The challenge:** build something with open-source AI at its core that someone would actually pay for. Think small, specific and useful — then explain what open innovation made possible that a closed API would not.
