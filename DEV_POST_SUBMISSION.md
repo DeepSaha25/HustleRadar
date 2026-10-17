@@ -45,7 +45,7 @@ The user enters:
 1. A product name or product URL
 2. The price they would actually pay
 3. An optional original/reference price
-4. An optional live or demo mode
+4. A server-side evidence mode: live for the investigator flow, or explicit demo fixtures for reproducible testing and previews
 
 The product then runs a complete decision loop:
 
@@ -118,7 +118,7 @@ This is a small detail with a large effect: a ₹999 accessory can make an appar
 
 You can try the application at **[hustleradar.onrender.com](https://hustleradar.onrender.com/)**. The walkthrough is on **[YouTube](https://youtu.be/BsQCG8vhWxs)**.
 
-The application has two explicit evidence modes:
+The API has two explicit evidence modes:
 
 - **Live mode** calls the configured search providers and reports the provider status it actually receives.
 - **Demo mode** loads clearly labelled fixtures so the complete UI can be demonstrated without an API key, quota or unstable retailer pages.
@@ -126,6 +126,8 @@ The application has two explicit evidence modes:
 The screenshots in this article use the stable demo scenario where indicated. That is intentional: the article should remain reproducible instead of quietly turning a quota failure into a fake live result.
 
 If a live provider fails, the report remains `live`, has no fabricated demo sellers, and can return `insufficient_data`. Demo fixtures are only loaded when the caller explicitly requests `mode: "demo"`.
+
+The backend supports both modes, while the current investigator flow submits live scans by default. The landing page's demo visuals and the offline tests use clearly labelled fixtures; the live search screen never silently changes a failed provider response into demo evidence.
 
 ![Render dashboard showing the live HustleRadar service and the deployed commit](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@main/dev-ss/13-render-deployment.png)
 
@@ -220,6 +222,114 @@ Gemma can be disabled with `ENABLE_LLM=false`. If Ollama or an optional open-mod
 
 The model can improve the explanation. It does not own the underlying prices, fee calculation or product-match decision.
 
+### Deterministic arbitrage math comes before language generation
+
+The margin is calculated in TypeScript before Gemma is called. The current product models an 8% resale-platform fee and classifies the opportunity using both percentage margin and absolute net profit:
+
+```ts
+const resaleMedianPrice = medianPrice;
+const grossMargin = resaleMedianPrice - buyPrice;
+const marginPercent = Math.round((grossMargin / buyPrice) * 100);
+const platformFeeEst = Math.round(resaleMedianPrice * 0.08);
+const netProfit = grossMargin - platformFeeEst;
+
+if (grossMargin > 0 && netProfit > 0) {
+  opportunityScore =
+    marginPercent >= 20 && netProfit >= 2000 ? "HIGH" :
+    marginPercent >= 10 || netProfit >= 800 ? "MODERATE" : "LOW";
+} else {
+  opportunityScore = "UNPROFITABLE";
+}
+```
+
+This is the boundary that makes the product useful for a money-sensitive decision. Gemma can make the result easier to understand, but it cannot change the arithmetic by writing a more persuasive paragraph.
+
+### Gemma routing is optional, replaceable and testable
+
+The local model path is deliberately configuration-driven:
+
+```ts
+if (/^(?:0|false|off|no)$/i.test(process.env.ENABLE_LLM?.trim() ?? "")) {
+  return null;
+}
+
+const gemmaUrl =
+  process.env.GEMMA_API_URL ||
+  (process.env.OLLAMA_BASE_URL
+    ? `${process.env.OLLAMA_BASE_URL}/api/generate`
+    : "http://127.0.0.1:11434/api/generate");
+
+const model =
+  process.env.GEMMA_MODEL_NAME ||
+  process.env.OPEN_MODEL_NAME ||
+  "gemma2:9b";
+```
+
+The request uses `stream: false`; the product streams evidence progress, not Gemma tokens. If local Ollama is unavailable, the implementation can try configured open-model endpoints and finally returns the deterministic rationale. The offline test suite disables LLM calls and verifies that the result still contains a useful rationale.
+
+### Three SerpApi paths, one evidence contract
+
+HustleRadar does not treat a single search response as the market. It runs three evidence paths concurrently:
+
+```ts
+const [shopping, retailers, context] = await Promise.all([
+  run("shopping", () => searchShoppingDetailed(query, signal, forceRefresh)),
+  run("retailers", () => searchMajorRetailersDetailed(query, signal, forceRefresh)),
+  run("context", () => searchContextDetailed(query, signal)),
+]);
+```
+
+Those paths mean:
+
+- `google_shopping` for structured offers;
+- retailer-restricted Google searches for direct store coverage;
+- dated Google context for price mentions and historical signals.
+
+Every request is server-side, uses `gl=in` and `hl=en`, applies a bounded timeout and preserves a provider status. A SerpApi HTTP 200 containing an error, quota response or invalid payload is not classified as a successful empty scan.
+
+### A listing must earn its way into the median
+
+Before a seller can influence the report, it passes product identity, condition, variant, currency, URL and availability checks:
+
+```ts
+const assessment = assessListing(query, item.title);
+if (!assessment.accepted) {
+  excludedCount++;
+  continue;
+}
+
+const variant = listingVariant(query, item.title);
+if (!variant.complete || !plausibleProductPrice(query, item.price)) {
+  excludedCount++;
+  continue;
+}
+```
+
+The same layer rejects accessories, books, replacement parts, refurbished mismatches, foreign currencies and wrong RAM/storage/screen configurations. If multiple configurations remain, HustleRadar stops and asks the user to select one instead of mixing them into a false median.
+
+### The browser receives real progress events
+
+The stream endpoint writes one NDJSON object per line and sends a final result only after deterministic analysis is complete:
+
+```ts
+res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8");
+
+const write = (payload: unknown): boolean => {
+  if (!connected || res.writableEnded || res.destroyed) return false;
+  res.write(`${JSON.stringify(payload)}\n`);
+  return true;
+};
+
+const result = await execute(req.body, controller.signal, (event) => {
+  write(event);
+});
+
+write({ type: "result", data: result });
+res.end();
+```
+
+The React client reads the response body incrementally. That is why the loading screen can show shopping, retailer, context and analysis stages without using a fake timer. Disconnecting the browser aborts the provider work through an `AbortController`.
+
 ## How I Built It
 
 HustleRadar is built around a simple architectural rule:
@@ -312,6 +422,82 @@ The model name, endpoint and enable/disable behavior come from environment varia
 Search takes longer than a local calculation. The API emits NDJSON progress events while it checks shopping results, retailers, context and analysis. The frontend can show which evidence path is running, which one finished and where a provider returned an error.
 
 That small interaction detail matters for trust: the user can see that the report is being assembled rather than waiting for an opaque “AI answer”.
+
+### 6. SerpApi is treated as a provider, not as truth
+
+The request adapter adds the Indian market and English-language parameters on the server, bounds the request time and rejects provider payloads that contain an error even when the HTTP status is 200:
+
+```ts
+const response = await axios.get("https://serpapi.com/search.json", {
+  params: { ...params, gl: "in", hl: "en", api_key: apiKey },
+  timeout: providerTimeout(),
+  signal,
+  maxContentLength: 2_000_000,
+  maxRedirects: 0,
+});
+
+const data = record(response.data);
+if (!Object.keys(data).length || data.error || record(data.search_metadata).status === "Error") {
+  throw new Error("provider-response-error");
+}
+```
+
+Shopping rows must contain a real allowlisted retailer product URL and a usable INR price. Foreign currency, EMI/monthly prices, “from” ranges and ambiguous promotional text are excluded instead of being treated as the checkout price.
+
+### 7. Direct retailer verification closes the search loop
+
+For retailer-restricted results, the backend does not blindly trust the search snippet. It discovers candidate pages, verifies them on the retailer domain and keeps the source class visible:
+
+```ts
+const relevant = parsed.items.filter((item) =>
+  retailerForUrl(item.link)?.domain === store.domain &&
+  discoveryListingMatches(query, item.title),
+);
+
+const candidates = [...new Map(relevant.map((item) => [item.link, item])).values()].slice(0, 3);
+const verified = await mapConcurrent(
+  candidates,
+  2,
+  (item) => verifyRetailerListing(item, query, signal, forceRefresh),
+);
+```
+
+The UI can distinguish “Read from the store page”, “Found on Google Shopping”, “Found in Google search” and “Demo price”. That makes SerpApi a grounding layer with receipts rather than an opaque source of numbers.
+
+### 8. Render runs a two-service deployment
+
+The selected Render category is supported by a checked-in Blueprint, not just a badge:
+
+```yaml
+services:
+  - type: web
+    name: hustleradar-web
+    env: static
+    buildCommand: npm install --include=dev && npm run build --workspace=apps/web
+    staticPublishPath: ./apps/web/dist
+
+  - type: web
+    name: hustleradar-api
+    env: node
+    plan: starter
+    buildCommand: npm install --include=dev && npm run build --workspace=apps/server
+    startCommand: npm run start --workspace=apps/server
+```
+
+The frontend receives the API host through a Render service reference. SerpApi and Gemma keys are `sync: false`, so the credentials are configured in Render rather than committed to the repository. The health endpoint reports service status, provider configuration, optional LLM configuration, analysis version and timestamp.
+
+Render hosts the application and API. It is not described here as the place where the local Ollama model runs; the verified local model path is `gemma2:9b` through Ollama on the developer machine.
+
+### 9. The reproducibility boundary is explicit
+
+The test suite is intentionally offline. Provider calls are mocked or disabled, so the tests prove the adapter contracts and failure behavior without pretending to prove an external quota or model endpoint. The current checks are:
+
+```bash
+npm test   # build server, then run the 24-test Node suite
+npm run build
+```
+
+The repository includes `package-lock.json` files and the Render Blueprint. The article does not claim that the repo is a Docker image or that the test suite makes a live SerpApi request; it claims the narrower, verifiable thing: the core decision boundaries can be rebuilt and checked without network access.
 
 ---
 
@@ -411,15 +597,19 @@ The current suite has **24 passing tests** covering:
 - deterministic rationale when Gemma is disabled;
 - rejection of ambiguous short product URLs.
 
+The suite is designed to be honest about what it proves. SerpApi calls are mocked or disabled, and Gemma is disabled in the offline server tests. That means the tests verify the application’s adapters, validation rules, fallback behavior and streaming contract; they do not pretend to prove a live provider quota or a remote model endpoint.
+
 ![HustleRadar test suite showing 24 passing tests](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@main/dev-ss/09-tests-passing.png)
 
-The production build also completes for the Node API and React frontend. Render is configured through [`render.yaml`](https://github.com/DeepSaha25/HustleRadar/blob/main/render.yaml), which defines the web frontend and Node API services, their build commands, the API connection and the production environment variables.
+The production build also completes for the Node API and React frontend. The build currently emits only non-blocking Vite warnings about future config-loader behavior and bundle size. Render is configured through [`render.yaml`](https://github.com/DeepSaha25/HustleRadar/blob/main/render.yaml), which defines the web frontend and Node API services, their build commands, the API connection and the production environment variables.
 
 The deployed health check is available at:
 
 ```text
 https://hustleradar.onrender.com/api/health
 ```
+
+That endpoint is a deployment health/configuration check: it reports service status, whether SerpApi is configured, whether optional LLM configuration is present, the analysis version and a timestamp. It is not presented as proof that a live SerpApi request or a Gemma generation succeeded at that exact moment.
 
 ---
 
@@ -459,15 +649,62 @@ HustleRadar is built around a concrete side-hustle decision: **should I buy this
 
 ### 🤖 Best Use of Gemma
 
-HustleRadar uses Google's open-weight **Gemma 2** as the deal auditor and resale advisor. The verified local path runs `gemma2:9b` through Ollama. The model receives structured, normalized market evidence and explains deal authenticity and fee-adjusted resale potential. It can be disabled, replaced or run locally without changing the deterministic report engine.
+HustleRadar uses Google's open-weight **Gemma 2** as a bounded deal auditor and resale advisor. The verified local path runs `gemma2:9b` through Ollama at `http://127.0.0.1:11434`. Gemma receives a structured prompt containing the normalized product, deterministic verdict, confidence, claimed price, market median, lowest comparable listing and fee-adjusted arbitrage result.
+
+The important technical choice is the order of operations:
+
+```text
+SerpApi evidence → product guards → deterministic verdict/margin → Gemma explanation
+```
+
+Gemma is not asked to discover prices or invent retailer names. It is instructed to stay inside the retained evidence. `ENABLE_LLM=false` bypasses the model, and the deterministic rationale remains available if Ollama or another configured open-model endpoint is unavailable. That makes the open model useful without making it the single point of correctness.
+
+Evidence in the repository:
+
+- `apps/server/src/services/llmClient.ts` — Gemma prompt, Ollama routing, optional provider paths and deterministic fallback;
+- `apps/server/src/routes/checkDeal.ts` — deterministic verdict and arbitrage calculation before rationale generation;
+- `apps/server/test/server.test.js` — offline test proving disabled Gemma causes zero network calls and still returns a rationale.
 
 ### 🔎 Best Use of SerpApi
 
-SerpApi provides the fresh market grounding: shopping results, direct retailer searches and dated context. The application preserves provider status and source links, filters the results before calculation and exposes coverage warnings instead of presenting unsupported numbers as facts.
+SerpApi is the fresh-market grounding layer. HustleRadar uses three search paths: `google_shopping` for offers, retailer-restricted Google searches for store coverage and dated Google context for price mentions. They run concurrently, preserve provider status and feed a validation layer before any number reaches the median or margin calculation.
+
+The integration is more than a search-box call:
+
+- Google Shopping rows require an actual allowlisted retailer product URL and a usable INR price;
+- foreign currencies, EMI/monthly prices, “from” ranges and ambiguous promotional text are excluded;
+- retailer-restricted candidates are verified against the retailer page where possible;
+- source labels distinguish retailer-page, Google Shopping, search-index and demo prices;
+- coverage warnings remain visible when a store fails or has no matching configuration;
+- a provider error never becomes a successful empty scan or demo evidence.
+
+Relevant implementation:
+
+- `apps/server/src/services/serpapiClient.ts` — request parameters, timeouts, Shopping parsing, retailer search, context search and response validation;
+- `apps/server/src/services/retailerPageClient.ts` — direct page verification and same-domain redirect rules;
+- `apps/server/src/services/retailers.ts` — domain allowlist and brand/region-aware retailer selection;
+- `apps/server/src/services/evidenceService.ts` — concurrent evidence orchestration, cache mode separation and provider status.
 
 ### 🚀 Best Use of Render
 
-The live application is deployed at [hustleradar.onrender.com](https://hustleradar.onrender.com/). The repository includes a Render Blueprint that builds the React frontend and Node API from the same project, with production configuration kept outside the repository.
+The live application is deployed at [hustleradar.onrender.com](https://hustleradar.onrender.com/). The repository includes a Render Blueprint with two services: a static Vite/React frontend and a Node/Express API. The frontend gets the API host from a Render service reference, while `SERPAPI_KEY` and `GEMMA_API_KEY` are marked `sync: false` and stay in deployment configuration.
+
+The Render-specific implementation is visible and reviewable:
+
+```yaml
+- type: web
+  name: hustleradar-web
+  env: static
+  staticPublishPath: ./apps/web/dist
+
+- type: web
+  name: hustleradar-api
+  env: node
+  plan: starter
+  startCommand: npm run start --workspace=apps/server
+```
+
+Render hosts the web application and API. It is not described as hosting the developer’s local Ollama process; the local Gemma path and the deployed service configuration are kept distinct.
 
 I am not claiming a `.tech`, DigitalOcean, ElevenLabs, Tinker, Backboard, Sentry or other partner category because this project does not have verified use of those services.
 
