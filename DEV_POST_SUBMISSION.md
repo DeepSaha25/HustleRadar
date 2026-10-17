@@ -60,7 +60,7 @@ The product then runs a complete decision loop:
 
 The input screen is intentionally small. A reseller should be able to paste a product, type the real buy price and start the check without writing a prompt.
 
-![HustleRadar input screen with Sony WH-1000XM5, a ₹15,000 offer price and a ₹22,000 reference price](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/12-input-screen.png)
+![HustleRadar landing page with Sony WH-1000XM5, a ₹15,000 offer price and a ₹22,000 reference price](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@main/dev-ss/01-landing-page.png)
 
 The interface also makes the boundary visible: **live data, multiple retailers, Gemma 2 AI and local inference availability** are capabilities of the system, not a guarantee that every provider will always respond.
 
@@ -129,7 +129,7 @@ If a live provider fails, the report remains `live`, has no fabricated demo sell
 
 The backend supports both modes, while the current investigator flow submits live scans by default. The landing page's demo visuals and the offline tests use clearly labelled fixtures; the live search screen never silently changes a failed provider response into demo evidence.
 
-![Render dashboard showing the live HustleRadar service and the deployed commit](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/13-render-deployment.png)
+![Gemma 2 analysis panel showing the evidence-backed HustleRadar rationale](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@main/dev-ss/11-gemma-analysis.png)
 
 ![Render health endpoint and deployment verification for HustleRadar](https://cdn.jsdelivr.net/gh/DeepSaha25/HustleRadar@a758fbf/dev-ss/07-render-health.png)
 
