@@ -1,5 +1,7 @@
 *This is a submission for the [Hacktoberfest Open-Source AI Challenge Week 2: Side Hustle](https://dev.to/challenges/hacktoberfest-week2-2026-10-12).*
 
+**DEV.to tags:** `#devchallenge` `#hf26challenge` `#ai` `#sidehustle`
+
 > **The challenge:** build something with open-source AI at its core that someone would actually pay for. Think small, specific and useful — then explain what open innovation made possible that a closed API would not.
 
 ## A ₹7,000 discount can still be a bad deal
